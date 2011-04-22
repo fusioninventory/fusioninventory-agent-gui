@@ -62,3 +62,24 @@ void Dialog::on_toolButtonSelectCert_clicked()
     config->set("ca-cert-file", fileName);
 
 }
+
+void Dialog::on_pushButton_2_clicked()
+{
+
+}
+
+void Dialog::on_pushButtonTest_clicked()
+{
+
+    //console.show();
+    this->setConfig();
+    console.start();
+    //terminal.show();
+    //terminal.show();
+    //terminal.start();
+}
+
+void Dialog::setFusInvBinPath(QString & path) {
+    console.fusInvBinPath = path;
+
+}

@@ -3,6 +3,7 @@
 
 #include <QDialog>
 #include "config.h"
+#include "console.h"
 
 namespace Ui {
     class Dialog;
@@ -18,6 +19,8 @@ public:
     bool loadConfig(Config * config);
     bool setConfig();
     Config * config;
+    Console console;
+    void setFusInvBinPath(QString & path);
 
 private slots:
     void on_pushButton_clicked();
@@ -25,6 +28,10 @@ private slots:
     void on_pushButtonCancel_clicked();
 
     void on_toolButtonSelectCert_clicked();
+
+    void on_pushButton_2_clicked();
+
+    void on_pushButtonTest_clicked();
 
 private:
     Ui::Dialog *ui;
