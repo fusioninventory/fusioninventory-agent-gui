@@ -1,3 +1,4 @@
+#include <QFileDialog>
 #include "dialog.h"
 #include "ui_dialog.h"
 #include "config.h"
@@ -25,6 +26,7 @@ bool Dialog::loadConfig(Config * config) {
     if (config->get("no-ssl-check") == "1") {
         ui->checkBoxNoSSLCheck->setChecked(true);
     }
+    ui->labelCaCertFile->setText(config->get("ca-cert-file"));
     return true;
 }
 
@@ -49,4 +51,14 @@ void Dialog::on_pushButton_clicked()
 void Dialog::on_pushButtonCancel_clicked()
 {
     QApplication::exit(0);
+}
+
+void Dialog::on_toolButtonSelectCert_clicked()
+{
+    QString fileName = QFileDialog::getOpenFileName(this, tr("Open File"),
+                                                     "/home");
+
+    ui->labelCaCertFile->setText(fileName);
+    config->set("ca-cert-file", fileName);
+
 }

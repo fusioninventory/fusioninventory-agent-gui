@@ -190,23 +190,10 @@ p, li { white-space: pre-wrap; }
          <string>Disable SSL certificat validity</string>
         </property>
        </widget>
-       <widget class="QLabel" name="label_5">
+       <widget class="QToolButton" name="toolButtonSelectCert">
         <property name="geometry">
          <rect>
-          <x>30</x>
-          <y>200</y>
-          <width>100</width>
-          <height>18</height>
-         </rect>
-        </property>
-        <property name="text">
-         <string>SSL cert path</string>
-        </property>
-       </widget>
-       <widget class="QToolButton" name="toolButton">
-        <property name="geometry">
-         <rect>
-          <x>140</x>
+          <x>380</x>
           <y>200</y>
           <width>29</width>
           <height>24</height>
@@ -219,14 +206,38 @@ p, li { white-space: pre-wrap; }
        <widget class="QLabel" name="label_8">
         <property name="geometry">
          <rect>
-          <x>30</x>
-          <y>240</y>
-          <width>70</width>
+          <x>20</x>
+          <y>210</y>
+          <width>111</width>
           <height>18</height>
          </rect>
         </property>
         <property name="text">
-         <string>empty</string>
+         <string>SSL certificat:</string>
+        </property>
+       </widget>
+       <widget class="QLabel" name="labelCaCertFile">
+        <property name="geometry">
+         <rect>
+          <x>30</x>
+          <y>230</y>
+          <width>361</width>
+          <height>61</height>
+         </rect>
+        </property>
+        <property name="font">
+         <font>
+          <italic>true</italic>
+         </font>
+        </property>
+        <property name="text">
+         <string>(unknown)</string>
+        </property>
+        <property name="textFormat">
+         <enum>Qt::AutoText</enum>
+        </property>
+        <property name="wordWrap">
+         <bool>true</bool>
         </property>
        </widget>
       </widget>

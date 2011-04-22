@@ -7,6 +7,7 @@ int main(int argc, char *argv[])
 {
     QApplication a(argc, argv);
 
+
     if (argc<2) {
         std::cerr<<"Usage: "<<argv[0]<<" somewhere/agent.cfg"<<std::endl;
         exit(1);

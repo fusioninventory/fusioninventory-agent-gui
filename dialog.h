@@ -24,6 +24,8 @@ private slots:
 
     void on_pushButtonCancel_clicked();
 
+    void on_toolButtonSelectCert_clicked();
+
 private:
     Ui::Dialog *ui;
 };
