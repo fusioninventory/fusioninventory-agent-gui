@@ -1,7 +1,7 @@
 #include "config.h"
 #include <iostream>
 #include <QtDebug>
-
+#include <QtGlobal>
 
 /*
  * Stellarium
@@ -107,9 +107,12 @@ static const QSettings::Format FusInvConfFormat = QSettings::registerFormat("con
 
 Config::Config(char * cfgPath)
 {
+#ifdef Q_OS_WIN32
+    settings = new QSettings( "HKEY_LOCAL_MACHINE\\Software\\FusionInventory-Agent", QSettings::NativeFormat );
+#else
     settings = new QSettings( cfgPath, FusInvConfFormat );
-    qDebug(settings->value( "color", "r").toString().toAscii());
-    qDebug(settings->value( "logfile", "r").toString().toAscii());
+#endif
+
 }
 
 QString Config::get(const QString & key) {

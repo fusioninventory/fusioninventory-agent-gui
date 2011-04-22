@@ -29,7 +29,7 @@ bool Console::start() {
 
     ui->plainTextConsole->clear();
     myProcess->start(program, arguments);
-     int result = myProcess->exitCode();
+     ui->plainTextConsole->appendPlainText(QString("Exit code: %1").arg(myProcess->exitCode()));
   /*  do {
        std::cout<<"aa"<<std::endl;
        QByteArray stdOutText = myProcess->readAllStandardOutput();
