@@ -1,4 +1,5 @@
 #include <QFileDialog>
+#include <QMessageBox>
 #include "dialog.h"
 #include "ui_dialog.h"
 #include "config.h"
@@ -27,6 +28,25 @@ bool Dialog::loadConfig(Config * config) {
         ui->checkBoxNoSSLCheck->setChecked(true);
     }
     ui->labelCaCertFile->setText(config->get("ca-cert-file"));
+
+    if (config->isReadOnly() ) {
+        ui->lineEditServer->setDisabled(true);
+        ui->lineEditUser->setDisabled(true);
+        ui->lineEditPassword->setDisabled(true);
+        ui->lineEditProxy->setDisabled(true);
+        ui->lineEditTag->setDisabled(true);
+        ui->checkBoxNoSSLCheck->setDisabled(true);
+        ui->toolButtonSelectCert->setDisabled(true);
+        ui->pushButtonCancel->setDisabled(true);
+        ui->pushButton->setDisabled(true);
+        ui->pushButtonTest->setDisabled(true);
+
+        QMessageBox msgBox;
+         msgBox.setText(tr("The configuration changes won't be saved. Do you have the required privilege?"));
+         msgBox.setIcon(QMessageBox::Warning);
+         msgBox.exec();
+    }
+
     return true;
 }
 

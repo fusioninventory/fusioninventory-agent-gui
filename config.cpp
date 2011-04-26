@@ -30,6 +30,7 @@
 #include <QStringList>
 #include <QIODevice>
 #include <QRegExp>
+#include <QFile>
 
 bool readConfFile(QIODevice &device, QSettings::SettingsMap &map)
 {
@@ -105,18 +106,27 @@ bool writeConfFile(QIODevice &device, const QSettings::SettingsMap &map)
 static const QSettings::Format FusInvConfFormat = QSettings::registerFormat("conf", readConfFile, writeConfFile);
 
 
-Config::Config(char * cfgPath)
+Config::Config(const QString & cfgPath)
 {
 #ifdef Q_OS_WIN32
     settings = new QSettings( "HKEY_LOCAL_MACHINE\\Software\\FusionInventory-Agent", QSettings::NativeFormat );
 #else
     settings = new QSettings( cfgPath, FusInvConfFormat );
+    readWrite = QFile::permissions(cfgPath).testFlag(QFile::WriteUser);
 #endif
 
 }
 
 QString Config::get(const QString & key) {
     return settings->value(key).toString();
+}
+
+bool Config::isReadOnly() {
+    if (readWrite) {
+        return false;
+    } else {
+        return true;
+    }
 }
 
 bool Config::set(const QString & key, const QString & server) {
