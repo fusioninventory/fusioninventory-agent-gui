@@ -1,4 +1,5 @@
 #include "config.h"
+#include <QtGui/QApplication>
 #include <iostream>
 #include <QtDebug>
 #include <QtGlobal>
@@ -30,7 +31,9 @@
 #include <QStringList>
 #include <QIODevice>
 #include <QRegExp>
+#include <QDir>
 #include <QFile>
+#include <QFileDialog>
 
 bool readConfFile(QIODevice &device, QSettings::SettingsMap &map)
 {
@@ -106,11 +109,55 @@ bool writeConfFile(QIODevice &device, const QSettings::SettingsMap &map)
 static const QSettings::Format FusInvConfFormat = QSettings::registerFormat("conf", readConfFile, writeConfFile);
 
 
-Config::Config(const QString & cfgPath)
+Config::Config(const QString & initCfgPath)
 {
 #ifdef Q_OS_WIN32
     settings = new QSettings( "HKEY_LOCAL_MACHINE\\Software\\FusionInventory-Agent", QSettings::NativeFormat );
 #else
+
+    /* Config file path: fusInvCfgPath
+      argv[1]
+      ~/.fusioninventory/agent.cfg
+      CWD/agent.cfg
+      CWD/.agent.cfg
+      GUI Executable path/agent.cfg
+      GUI Executable path/.agent.cfg
+      /etc/fusioninventory/agent.cfg
+      */
+    QStringList fusInvCfgPathList;
+    if(!initCfgPath.isEmpty()) {
+        fusInvCfgPathList.append(initCfgPath);
+    }
+    fusInvCfgPathList.append(QString("%1/.fusioninventory/agent.cfg")
+                             .arg(QDir::homePath()));
+    QString cfgParentPath;
+    cfgParentPath = QDir::currentPath();
+    fusInvCfgPathList.append(QString("%1/agent.cfg").arg(cfgParentPath));
+    fusInvCfgPathList.append(QString("%1/.agent.cfg").arg(cfgParentPath));
+    cfgParentPath = QFileInfo( qApp->arguments().first() ).absolutePath();
+    fusInvCfgPathList.append(QString("%1/agent.cfg").arg(cfgParentPath));
+    fusInvCfgPathList.append(QString("%1/.agent.cfg").arg(cfgParentPath));
+    fusInvCfgPathList.append("/etc/fusioninventory/agent.cfg");
+
+    QString cfgPath;
+    while(cfgPath.isEmpty()) {
+        if(! fusInvCfgPathList.isEmpty()) {
+            cfgPath = fusInvCfgPathList.takeFirst();
+        } else {
+            cfgPath = QFileDialog::getOpenFileName(0, tr("Open Config File"),
+                                                           QDir::homePath());
+            //FIXME cancel button should terminate the application
+            if (!QFile::exists(cfgPath)) {
+                readWrite = QFile(cfgPath).open( QFile::WriteOnly );
+                QFile(cfgPath).close();
+            }
+
+        }
+        if(!QFile::exists(cfgPath)) {
+            cfgPath.clear();
+        }
+    }
+
     settings = new QSettings( cfgPath, FusInvConfFormat );
     readWrite = QFile::permissions(cfgPath).testFlag(QFile::WriteUser);
 #endif

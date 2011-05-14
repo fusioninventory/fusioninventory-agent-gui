@@ -1,9 +1,10 @@
 #ifndef CONFIG_H
 #define CONFIG_H
 
+#include <QObject>
 #include <QSettings>
 
-class Config
+class Config : private QObject
 {
 public:
     Config(const QString & cfgPath);
