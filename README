@@ -1,0 +1,18 @@
+= About =
+
+This tool helps you prepare your FusionInventory agent:
+ -set the server path with the optional credentials
+ -configure the proxy settings
+ -register the SSL certificat
+
+= Build =
+
+This is a comment qt4 application.
+
+qmake
+make
+
+= License =
+
+Copyright (c) 2011 FusionInventory Project
+This is a GLPv2+ application
