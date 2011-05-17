@@ -161,7 +161,6 @@ Config::Config(const QString & initCfgPath)
     settings = new QSettings( cfgPath, FusInvConfFormat );
     readWrite = QFile::permissions(cfgPath).testFlag(QFile::WriteUser);
 #endif
-
 }
 
 QString Config::get(const QString & key) {

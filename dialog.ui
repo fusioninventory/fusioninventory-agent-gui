@@ -11,7 +11,11 @@
    </rect>
   </property>
   <property name="windowTitle">
-   <string>Dialog</string>
+   <string>FusionInventory</string>
+  </property>
+  <property name="windowIcon">
+   <iconset resource="FusionInventory.qrc">
+    <normaloff>:/fusinv/fusinv.ico</normaloff>:/fusinv/fusinv.ico</iconset>
   </property>
   <layout class="QVBoxLayout" name="verticalLayout_3">
    <item>
@@ -19,104 +23,150 @@
      <item>
       <widget class="QTabWidget" name="tabWidget">
        <property name="currentIndex">
-        <number>2</number>
+        <number>1</number>
        </property>
        <widget class="QWidget" name="tab_2">
         <attribute name="title">
          <string>Server</string>
         </attribute>
-        <widget class="QRadioButton" name="radioButton">
-         <property name="enabled">
-          <bool>true</bool>
-         </property>
-         <property name="geometry">
-          <rect>
-           <x>30</x>
-           <y>40</y>
-           <width>117</width>
-           <height>21</height>
-          </rect>
-         </property>
-         <property name="text">
-          <string>Local Host</string>
-         </property>
-         <property name="checked">
-          <bool>true</bool>
-         </property>
-        </widget>
-        <widget class="QRadioButton" name="radioButton_2">
-         <property name="enabled">
-          <bool>true</bool>
-         </property>
-         <property name="geometry">
-          <rect>
-           <x>30</x>
-           <y>80</y>
-           <width>251</width>
-           <height>21</height>
-          </rect>
-         </property>
-         <property name="text">
-          <string>Remote Windows Host</string>
-         </property>
-        </widget>
-        <widget class="QRadioButton" name="radioButton_3">
-         <property name="enabled">
-          <bool>true</bool>
-         </property>
-         <property name="geometry">
-          <rect>
-           <x>30</x>
-           <y>120</y>
-           <width>251</width>
-           <height>21</height>
-          </rect>
-         </property>
-         <property name="text">
-          <string>Remote Unix / Linux Host</string>
-         </property>
-        </widget>
-        <widget class="QLabel" name="label_14">
-         <property name="geometry">
-          <rect>
-           <x>20</x>
-           <y>220</y>
-           <width>25</width>
-           <height>26</height>
-          </rect>
-         </property>
-         <property name="text">
-          <string>Tag</string>
-         </property>
-        </widget>
-        <widget class="QLineEdit" name="lineEditTag">
-         <property name="geometry">
-          <rect>
-           <x>49</x>
-           <y>220</y>
-           <width>390</width>
-           <height>26</height>
-          </rect>
-         </property>
-         <property name="toolTip">
-          <string>&lt;!DOCTYPE HTML PUBLIC &quot;-//W3C//DTD HTML 4.0//EN&quot; &quot;http://www.w3.org/TR/REC-html40/strict.dtd&quot;&gt;
+        <layout class="QVBoxLayout" name="verticalLayout_7">
+         <item>
+          <widget class="QRadioButton" name="radioButtonLocal">
+           <property name="enabled">
+            <bool>true</bool>
+           </property>
+           <property name="text">
+            <string>Local Host</string>
+           </property>
+           <property name="checked">
+            <bool>true</bool>
+           </property>
+          </widget>
+         </item>
+         <item>
+          <widget class="QRadioButton" name="radioButtonRemoteWin">
+           <property name="enabled">
+            <bool>true</bool>
+           </property>
+           <property name="text">
+            <string>Remote Windows Host</string>
+           </property>
+          </widget>
+         </item>
+         <item>
+          <widget class="QRadioButton" name="radioButtonRemoteUnix">
+           <property name="enabled">
+            <bool>true</bool>
+           </property>
+           <property name="text">
+            <string>Remote Unix / Linux Host</string>
+           </property>
+          </widget>
+         </item>
+         <item>
+          <layout class="QHBoxLayout" name="horizontalLayout_4">
+           <item>
+            <widget class="QLabel" name="label_14">
+             <property name="text">
+              <string>Tag</string>
+             </property>
+            </widget>
+           </item>
+           <item>
+            <widget class="QLineEdit" name="lineEditTag">
+             <property name="toolTip">
+              <string>&lt;!DOCTYPE HTML PUBLIC &quot;-//W3C//DTD HTML 4.0//EN&quot; &quot;http://www.w3.org/TR/REC-html40/strict.dtd&quot;&gt;
 &lt;html&gt;&lt;head&gt;&lt;meta name=&quot;qrichtext&quot; content=&quot;1&quot; /&gt;&lt;style type=&quot;text/css&quot;&gt;
 p, li { white-space: pre-wrap; }
 &lt;/style&gt;&lt;/head&gt;&lt;body style=&quot; font-family:'Sans Serif'; font-size:11pt; font-weight:400; font-style:normal;&quot;&gt;
 &lt;p style=&quot; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;&lt;span style=&quot; font-family:'Cantarell';&quot;&gt;Tag can be used to identify an entity in an organizational structure.&lt;/span&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
-         </property>
-         <property name="whatsThis">
-          <string>&lt;!DOCTYPE HTML PUBLIC &quot;-//W3C//DTD HTML 4.0//EN&quot; &quot;http://www.w3.org/TR/REC-html40/strict.dtd&quot;&gt;
+             </property>
+             <property name="whatsThis">
+              <string>&lt;!DOCTYPE HTML PUBLIC &quot;-//W3C//DTD HTML 4.0//EN&quot; &quot;http://www.w3.org/TR/REC-html40/strict.dtd&quot;&gt;
 &lt;html&gt;&lt;head&gt;&lt;meta name=&quot;qrichtext&quot; content=&quot;1&quot; /&gt;&lt;style type=&quot;text/css&quot;&gt;
 p, li { white-space: pre-wrap; }
 &lt;/style&gt;&lt;/head&gt;&lt;body style=&quot; font-family:'Sans Serif'; font-size:11pt; font-weight:400; font-style:normal;&quot;&gt;
 &lt;p style=&quot; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;&lt;span style=&quot; font-family:'Cantarell';&quot;&gt;Tag can be used to identify an entity in an organizational structure.&lt;/span&gt;&lt;/p&gt;
 &lt;p style=&quot; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;&lt;span style=&quot; font-family:'Cantarell';&quot;&gt;For example: &amp;quot;IT-group&amp;quot; or &amp;quot;sale-team&amp;quot;.&lt;/span&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
-         </property>
-         <property name="text">
-          <string>hostname-department</string>
-         </property>
-        </widget>
+             </property>
+             <property name="text">
+              <string>hostname-department</string>
+             </property>
+            </widget>
+           </item>
+          </layout>
+         </item>
+         <item>
+          <widget class="QGroupBox" name="groupBoxRemoteHost">
+           <property name="enabled">
+            <bool>false</bool>
+           </property>
+           <property name="title">
+            <string>Remote host to be inventoried.</string>
+           </property>
+           <layout class="QFormLayout" name="formLayout_2">
+            <item row="0" column="0">
+             <widget class="QLabel" name="label_11">
+              <property name="text">
+               <string>Host</string>
+              </property>
+             </widget>
+            </item>
+            <item row="0" column="1">
+             <widget class="QLineEdit" name="lineEditRemoteHost">
+              <property name="toolTip">
+               <string>The remote host to be inventoried.</string>
+              </property>
+              <property name="whatsThis">
+               <string>Hostname or IP address of the remote host to be inventoried.</string>
+              </property>
+              <property name="text">
+               <string>hostname.domain.org</string>
+              </property>
+             </widget>
+            </item>
+            <item row="1" column="0">
+             <widget class="QLabel" name="label_6">
+              <property name="text">
+               <string>Username</string>
+              </property>
+             </widget>
+            </item>
+            <item row="1" column="1">
+             <widget class="QLineEdit" name="lineEditRemoteHostUser">
+              <property name="toolTip">
+               <string>Username of the remote host to be inventoried.</string>
+              </property>
+              <property name="whatsThis">
+               <string>Username that is used to connect to the remote host to be inventoried.
+[Domain/]Username</string>
+              </property>
+              <property name="text">
+               <string>Administrator</string>
+              </property>
+             </widget>
+            </item>
+            <item row="2" column="0">
+             <widget class="QLabel" name="label_10">
+              <property name="text">
+               <string>Password</string>
+              </property>
+             </widget>
+            </item>
+            <item row="2" column="1">
+             <widget class="QLineEdit" name="lineEditRemoteHostPassword">
+              <property name="toolTip">
+               <string>Password of the remote host to be inventoried.</string>
+              </property>
+              <property name="text">
+               <string>PlainTextPassword</string>
+              </property>
+             </widget>
+            </item>
+           </layout>
+          </widget>
+         </item>
+        </layout>
        </widget>
        <widget class="QWidget" name="tab_5">
         <attribute name="title">
@@ -126,7 +176,7 @@ p, li { white-space: pre-wrap; }
          <item>
           <widget class="QGroupBox" name="groupBox">
            <property name="title">
-            <string>Agent executable path</string>
+            <string>Agent installation path</string>
            </property>
            <layout class="QFormLayout" name="formLayout">
             <item row="0" column="0">
@@ -138,8 +188,16 @@ p, li { white-space: pre-wrap; }
             </item>
             <item row="0" column="1">
              <widget class="QLineEdit" name="lineEditAgentWin">
+              <property name="toolTip">
+               <string>Where the FusionInventory-Agent is installed on the target host.</string>
+              </property>
+              <property name="whatsThis">
+               <string>Where the FusionInventory-Agent is installed. Normally C:\Program Files\FusionInventory-Agent\
+
+perl\bin\perl.exe and perl\bin\fusioninventory-agent have to be present in this folder.</string>
+              </property>
               <property name="text">
-               <string>C:\Program Files\FusionInventory-Agent\fusioninventory-agent</string>
+               <string>C:\Program Files\FusionInventory-Agent\</string>
               </property>
              </widget>
             </item>
@@ -151,9 +209,23 @@ p, li { white-space: pre-wrap; }
              </widget>
             </item>
             <item row="1" column="1">
-             <widget class="QLineEdit" name="lineEditUser_2">
+             <widget class="QLineEdit" name="lineEditAgentUnix">
+              <property name="toolTip">
+               <string>Where the FusionInventory-Agent is installed on the target host.</string>
+              </property>
+              <property name="whatsThis">
+               <string>Where the FusionInventory-Agent is installed. Normally, one of the following:
+/usr
+/usr/local
+/usr/fusioninventory-agent
+/usr/local/fusioninventory-agent
+/opt/fusioninventory-agent
+
+
+fusioninventory-agent have to be present in this folder. Moreover, if it is a standalone installation, perl/bin/perl have to be present in this folder.</string>
+              </property>
               <property name="text">
-               <string>/opt/fusioninventory-agent/perl/bin/fusioninventory-agent</string>
+               <string>/opt/fusioninventory-agent</string>
               </property>
              </widget>
             </item>
@@ -161,56 +233,86 @@ p, li { white-space: pre-wrap; }
           </widget>
          </item>
          <item>
-          <widget class="QGroupBox" name="groupBox_2">
+          <widget class="QGroupBox" name="groupBox_4">
            <property name="title">
-            <string>Agent installable folder</string>
+            <string>Windows remote execution utilities</string>
            </property>
-           <layout class="QFormLayout" name="formLayout_2">
-            <item row="0" column="0">
-             <widget class="QLabel" name="label_12">
-              <property name="text">
-               <string>Windows</string>
-              </property>
-             </widget>
-            </item>
-            <item row="0" column="1">
-             <widget class="QLineEdit" name="lineEditAgentWin_3">
-              <property name="toolTip">
-               <string>Should contain the .msi and .vbs files</string>
-              </property>
-              <property name="whatsThis">
-               <string>Shared folder that contains the .msi and .vbs files</string>
-              </property>
-              <property name="text">
-               <string>\\fileserver\public\fusioninventory-agent\windows\</string>
-              </property>
-             </widget>
-            </item>
+           <layout class="QFormLayout" name="formLayout_3">
             <item row="1" column="0">
-             <widget class="QLabel" name="label_13">
+             <widget class="QLabel" name="labelPsExec">
+              <property name="enabled">
+               <bool>false</bool>
+              </property>
               <property name="text">
-               <string>Unix / Linux</string>
+               <string>PsExec</string>
               </property>
              </widget>
             </item>
             <item row="1" column="1">
-             <widget class="QLineEdit" name="lineEditUser_4">
+             <widget class="QLineEdit" name="lineEditPsExec">
+              <property name="enabled">
+               <bool>false</bool>
+              </property>
               <property name="toolTip">
-               <string>&lt;!DOCTYPE HTML PUBLIC &quot;-//W3C//DTD HTML 4.0//EN&quot; &quot;http://www.w3.org/TR/REC-html40/strict.dtd&quot;&gt;
-&lt;html&gt;&lt;head&gt;&lt;meta name=&quot;qrichtext&quot; content=&quot;1&quot; /&gt;&lt;style type=&quot;text/css&quot;&gt;
-p, li { white-space: pre-wrap; }
-&lt;/style&gt;&lt;/head&gt;&lt;body style=&quot; font-family:'Sans Serif'; font-size:11pt; font-weight:400; font-style:normal;&quot;&gt;
-&lt;p style=&quot; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;Should contain the &lt;span style=&quot; font-family:'Courier New,courier';&quot;&gt;Standalone distribution&lt;/span&gt; files&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+               <string>Path to PsExec executable.</string>
+              </property>
+              <property name="whatsThis">
+               <string/>
+              </property>
+              <property name="text">
+               <string>C:\Program Files\PsExec\psexec</string>
+              </property>
+             </widget>
+            </item>
+            <item row="4" column="0">
+             <widget class="QLabel" name="labelWinexe">
+              <property name="enabled">
+               <bool>false</bool>
+              </property>
+              <property name="text">
+               <string>winexe</string>
+              </property>
+             </widget>
+            </item>
+            <item row="4" column="1">
+             <widget class="QLineEdit" name="lineEditWinexe">
+              <property name="enabled">
+               <bool>false</bool>
+              </property>
+              <property name="toolTip">
+               <string>Path to the winexe executable.</string>
               </property>
               <property name="whatsThis">
                <string>&lt;!DOCTYPE HTML PUBLIC &quot;-//W3C//DTD HTML 4.0//EN&quot; &quot;http://www.w3.org/TR/REC-html40/strict.dtd&quot;&gt;
 &lt;html&gt;&lt;head&gt;&lt;meta name=&quot;qrichtext&quot; content=&quot;1&quot; /&gt;&lt;style type=&quot;text/css&quot;&gt;
 p, li { white-space: pre-wrap; }
 &lt;/style&gt;&lt;/head&gt;&lt;body style=&quot; font-family:'Sans Serif'; font-size:11pt; font-weight:400; font-style:normal;&quot;&gt;
-&lt;p style=&quot; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;Should contain the &lt;span style=&quot; font-family:'Courier New,courier';&quot;&gt;Standalone distribution&lt;/span&gt; files like fusioninventory-agent_debian-5.0-amd64_2.1.8-2.tar.gz or fusioninventory-agent_openbsd-4.8-i386_2.1.8-2.tar.gz or fusioninventory-agent_hpux_11.23-IA64_2.1.8-2.zip&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+&lt;p style=&quot; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;winexec is used for running windows cmd from linux.&lt;/p&gt;
+&lt;p style=&quot; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;A static prebuilt can be obtained from the address below:&lt;/p&gt;
+&lt;p style=&quot; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;&lt;span style=&quot; text-decoration: underline;&quot;&gt;http://eol.ovh.org/winexe/winexe-static-081123.bz2&lt;/span&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
               </property>
               <property name="text">
-               <string>/mnt/fileserver/public/fusioninventory-agent/unix/</string>
+               <string>/usr/local/bin/winexe</string>
+              </property>
+             </widget>
+            </item>
+            <item row="2" column="1">
+             <widget class="QToolButton" name="toolButtonPsExec">
+              <property name="enabled">
+               <bool>false</bool>
+              </property>
+              <property name="text">
+               <string>...</string>
+              </property>
+             </widget>
+            </item>
+            <item row="5" column="1">
+             <widget class="QToolButton" name="toolButtonWinexe">
+              <property name="enabled">
+               <bool>false</bool>
+              </property>
+              <property name="text">
+               <string>...</string>
               </property>
              </widget>
             </item>
@@ -251,7 +353,7 @@ p, li { white-space: pre-wrap; }
             </widget>
            </item>
            <item row="1" column="1">
-            <widget class="QLineEdit" name="lineEditUser"/>
+            <widget class="QLineEdit" name="lineEditServerUser"/>
            </item>
            <item row="2" column="0">
             <widget class="QLabel" name="label_3">
@@ -261,7 +363,7 @@ p, li { white-space: pre-wrap; }
             </widget>
            </item>
            <item row="2" column="1">
-            <widget class="QLineEdit" name="lineEditPassword"/>
+            <widget class="QLineEdit" name="lineEditServerPassword"/>
            </item>
            <item row="3" column="0">
             <widget class="QLabel" name="label_7">
@@ -428,6 +530,8 @@ p, li { white-space: pre-wrap; }
   </layout>
  </widget>
  <layoutdefault spacing="6" margin="11"/>
- <resources/>
+ <resources>
+  <include location="FusionInventory.qrc"/>
+ </resources>
  <connections/>
 </ui>

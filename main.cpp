@@ -19,8 +19,6 @@ int main(int argc, char *argv[])
     } */
 
     Dialog w;
-    QString fusInvBinPath = QString("/usr/bin/fusioninventory-agent");
-    w.setFusInvBinPath(fusInvBinPath);
 
     /* QString fusInvCfgPath = QString("/etc/fusioninventory/agent.cfg"); */
     /* QString fusInvCfgPath = QString("/home/goneri/tmp/agent.cfg"); */
@@ -29,6 +27,14 @@ int main(int argc, char *argv[])
         fusInvCfgPath = qApp->arguments().at(1);
     }
     Config c(fusInvCfgPath);
+    if (qApp->arguments().count()>2) {
+        QString fusInvPath = qApp->arguments().at(2);
+#ifdef Q_OS_WIN32
+        c.set("agent-win", fusInvPath);
+#else
+        c.set("agent-unix", fusInvPath);
+#endif
+    }
     w.loadConfig(&c);
     w.show();
 

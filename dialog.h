@@ -20,7 +20,6 @@ public:
     bool setConfig();
     Config * config;
     Console console;
-    void setFusInvBinPath(QString & path);
 
 private slots:
     void on_pushButton_clicked();
@@ -29,9 +28,9 @@ private slots:
 
     void on_toolButtonSelectCert_clicked();
 
-    void on_pushButton_2_clicked();
-
     void on_pushButtonTest_clicked();
+
+    void on_radioButtonLocal_toggled(bool checked);
 
 private:
     Ui::Dialog *ui;

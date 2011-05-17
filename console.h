@@ -3,6 +3,7 @@
 
 #include <QDialog>
 #include <QProcess>
+#include "config.h"
 
 namespace Ui {
     class Console;
@@ -15,9 +16,10 @@ class Console : public QDialog
 public:
     explicit Console(QWidget *parent = 0);
     ~Console();
-    bool start();
+    bool startLocal(Config * config);
+    bool startRemoteWin(Config * config);
     QProcess *myProcess;
-    QString fusInvBinPath;
+    Config * config;
 
 private slots:
     void updateConsole ();

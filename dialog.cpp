@@ -9,6 +9,16 @@ Dialog::Dialog(QWidget *parent) :
     ui(new Ui::Dialog)
 {
     ui->setupUi(this);
+#ifdef Q_OS_WIN32
+    ui->labelPsExec->setEnabled(true);
+    ui->lineEditPsExec->setEnabled(true);
+    ui->toolButtonPsExec->setEnabled(true);
+#else
+    ui->labelWinexe->setEnabled(true);
+    ui->lineEditWinexe->setEnabled(true);
+    ui->toolButtonWinexe->setEnabled(true);
+#endif
+
 }
 
 Dialog::~Dialog()
@@ -19,27 +29,45 @@ Dialog::~Dialog()
 bool Dialog::loadConfig(Config * config) {
     this->config = config;
 
+    ui->lineEditRemoteHost->setText(config->get("host"));
+    ui->lineEditRemoteHostUser->setText(config->get("host-user"));
+    ui->lineEditRemoteHostPassword->setText(config->get("host-password"));
     ui->lineEditServer->setText(config->get("server"));
-    ui->lineEditUser->setText(config->get("user"));
-    ui->lineEditPassword->setText(config->get("password"));
+    ui->lineEditServerUser->setText(config->get("server-user"));
+    ui->lineEditServerPassword->setText(config->get("server-password"));
     ui->lineEditProxy->setText(config->get("proxy"));
     ui->lineEditTag->setText(config->get("tag"));
     if (config->get("no-ssl-check") == "1") {
         ui->checkBoxNoSSLCheck->setChecked(true);
     }
     ui->labelCaCertFile->setText(config->get("ca-cert-file"));
+    ui->lineEditAgentWin->setText(config->get("agent-win"));
+    ui->lineEditAgentUnix->setText(config->get("agent-unix"));
+    ui->lineEditPsExec->setText(config->get("psexec"));
+    ui->lineEditWinexe->setText(config->get("winexe"));
 
     if (config->isReadOnly() ) {
+        ui->lineEditRemoteHost->setDisabled(true);
+        ui->lineEditRemoteHostUser->setDisabled(true);
+        ui->lineEditRemoteHostPassword->setDisabled(true);
         ui->lineEditServer->setDisabled(true);
-        ui->lineEditUser->setDisabled(true);
-        ui->lineEditPassword->setDisabled(true);
+        ui->lineEditServerUser->setDisabled(true);
+        ui->lineEditServerPassword->setDisabled(true);
         ui->lineEditProxy->setDisabled(true);
         ui->lineEditTag->setDisabled(true);
         ui->checkBoxNoSSLCheck->setDisabled(true);
         ui->toolButtonSelectCert->setDisabled(true);
-        ui->pushButtonCancel->setDisabled(true);
-        ui->pushButton->setDisabled(true);
+
+        ui->lineEditAgentWin->setDisabled(true);
+        ui->lineEditAgentUnix->setDisabled(true);
+        ui->lineEditPsExec->setDisabled(true);
+        ui->toolButtonPsExec->setDisabled(true);
+        ui->lineEditWinexe->setDisabled(true);
+        ui->toolButtonWinexe->setDisabled(true);
+
+        ui->pushButtonCancel->setEnabled(true);
         ui->pushButtonTest->setDisabled(true);
+        ui->pushButton->setDisabled(true);
 
         QMessageBox msgBox;
          msgBox.setText(tr("The configuration changes won't be saved. Do you have the required privilege?"));
@@ -52,12 +80,19 @@ bool Dialog::loadConfig(Config * config) {
 
 bool Dialog::setConfig() {
 
+    config->set("host", ui->lineEditRemoteHost->text());
+    config->set("host-user", ui->lineEditRemoteHostUser->text());
+    config->set("host-password", ui->lineEditRemoteHostPassword->text());
     config->set("server", ui->lineEditServer->text());
-    config->set("user", ui->lineEditUser->text());
-    config->set("password", ui->lineEditPassword->text());
+    config->set("server-user", ui->lineEditServerUser->text());
+    config->set("server-password", ui->lineEditServerPassword->text());
     config->set("proxy", ui->lineEditProxy->text());
     config->set("tag", ui->lineEditTag->text());
     config->set("no-ssl-check", ui->checkBoxNoSSLCheck->isChecked()?"1":"0");
+    config->set("agent-win", ui->lineEditAgentWin->text());
+    config->set("agent-unix", ui->lineEditAgentUnix->text());
+    config->set("psexec", ui->lineEditPsExec->text());
+    config->set("winexe", ui->lineEditWinexe->text());
     config->save();
     return true;
 }
@@ -83,19 +118,34 @@ void Dialog::on_toolButtonSelectCert_clicked()
 
 }
 
-void Dialog::on_pushButton_2_clicked()
-{
-
-}
-
 void Dialog::on_pushButtonTest_clicked()
 {
 
     this->setConfig();
-    console.start();
+    if(ui->radioButtonLocal->isChecked()) {
+        console.startLocal(config);
+    } else if (ui->radioButtonRemoteWin->isChecked()) {
+        console.startRemoteWin(config);
+    } else if(ui->radioButtonRemoteUnix->isChecked()) {
+        QMessageBox msgBox;
+        msgBox.setText(tr("Remote Unix inventory is not implemented yet!"));
+        msgBox.setIcon(QMessageBox::Information);
+        msgBox.exec();
+    } else {
+        QMessageBox msgBox;
+        msgBox.setText(tr("No server selected."));
+        msgBox.setIcon(QMessageBox::Warning);
+        msgBox.exec();
+    }
 }
 
-void Dialog::setFusInvBinPath(QString & path) {
-    console.fusInvBinPath = path;
+
+void Dialog::on_radioButtonLocal_toggled(bool checked)
+{
+    if(ui->radioButtonLocal->isChecked()) {
+        ui->groupBoxRemoteHost->setDisabled(true);
+    } else {
+        ui->groupBoxRemoteHost->setEnabled(true);
+    }
 
 }

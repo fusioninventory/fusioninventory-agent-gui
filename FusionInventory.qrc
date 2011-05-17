@@ -1,0 +1,5 @@
+<RCC>
+    <qresource prefix="/fusinv">
+        <file>fusinv.ico</file>
+    </qresource>
+</RCC>

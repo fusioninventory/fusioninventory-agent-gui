@@ -21,3 +21,6 @@ HEADERS  += dialog.h \
 
 FORMS    += dialog.ui \
     console.ui
+
+RESOURCES += \
+    FusionInventory.qrc
