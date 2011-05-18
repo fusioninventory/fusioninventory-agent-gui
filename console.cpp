@@ -46,7 +46,7 @@ bool Console::startLocal(Config * config) {
     ui->plainTextConsoleErr->clear();
     ui->plainTextConsoleOut->appendPlainText(program);
 
-    /*foreach(QString tmpStr, arguments) {
+    /* foreach(QString tmpStr, arguments) {
         ui->plainTextConsoleOut->appendPlainText(tmpStr);
     }
     */
@@ -56,6 +56,8 @@ bool Console::startLocal(Config * config) {
         qApp->processEvents(QEventLoop::AllEvents, 700);
     }
 
+    updateConsole();
+    //FIXME Detect Error Code 3 (ERROR_PATH_NOT_FOUND) and suggest installation
     ui->plainTextConsoleOut->appendPlainText("---------- Process Completed ----------");
     ui->plainTextConsoleOut->appendPlainText(QString("Exit code: %1").arg(myProcess->exitCode()));
 
@@ -89,7 +91,7 @@ bool Console::startRemoteWin(Config * config) {
     ui->plainTextConsoleErr->clear();
     ui->plainTextConsoleOut->appendPlainText(program);
 
-    /*foreach(QString tmpStr, arguments) {
+    /* foreach(QString tmpStr, arguments) {
         ui->plainTextConsoleOut->appendPlainText(tmpStr);
     }
     */
@@ -99,6 +101,55 @@ bool Console::startRemoteWin(Config * config) {
         qApp->processEvents(QEventLoop::AllEvents, 700);
     }
 
+    updateConsole();
+    //FIXME Detect following and suggest installation:
+    //Error: error Creating process("C:\Program Files\FusionInventory-Agent\perl\bin\perl.exe" "C:\Program Files\FusionInventory-Agent\perl\bin\fusioninventory-agent" --debug  --tag=Testing-by_GUI --server http://ocs/ocsinventory) 3
+    ui->plainTextConsoleOut->appendPlainText("---------- Process Completed ----------");
+    ui->plainTextConsoleOut->appendPlainText(QString("Exit code: %1").arg(myProcess->exitCode()));
+
+    ui->pushButtonOK->setText("OK");
+    return true;
+}
+
+bool Console::instRemoteWin(Config * config) {
+    this->show();
+    this->repaint();
+
+    QString program = config->get("winexe");
+    QStringList arguments;
+    arguments << "--user"
+              << QString("%1%%2")
+                 .arg(config->get("host-user"))
+                 .arg(config->get("host-password"));
+    arguments << QString("--runas=%1%%2")
+                 .arg(config->get("host-user"))
+                 .arg(config->get("host-password"));
+    arguments << "-d" << "11";
+    arguments << QString("//%1").arg(config->get("host"));
+    arguments << QString("CMD.EXE /C \"%1\" /S /tag=%2 /server=%3")
+                 .arg(config->get("inst-win"))
+                 .arg(config->get("tag"))
+                 .arg(config->get("server"));
+
+    myProcess = new QProcess();
+    connect ( myProcess, SIGNAL(readyReadStandardError ()), this,
+             SLOT(updateConsole()));
+
+    ui->plainTextConsoleOut->clear();
+    ui->plainTextConsoleErr->clear();
+    ui->plainTextConsoleOut->appendPlainText(program);
+
+    /* foreach(QString tmpStr, arguments) {
+        ui->plainTextConsoleOut->appendPlainText(tmpStr);
+    }
+    */
+
+    myProcess->start(program, arguments);
+    while(myProcess->state() != QProcess::NotRunning) {
+        qApp->processEvents(QEventLoop::AllEvents, 700);
+    }
+
+    updateConsole();
     ui->plainTextConsoleOut->appendPlainText("---------- Process Completed ----------");
     ui->plainTextConsoleOut->appendPlainText(QString("Exit code: %1").arg(myProcess->exitCode()));
 

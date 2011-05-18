@@ -40,6 +40,12 @@ private slots:
 
     void on_toolButtonWinexe_clicked();
 
+    void on_toolButtonInstWin_clicked();
+
+    void on_pushButtonInstWin_clicked();
+
+    void on_pushButtonRemoteInst_clicked();
+
 private:
     Ui::Dialog *ui;
 };

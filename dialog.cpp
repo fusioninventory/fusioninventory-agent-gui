@@ -7,7 +7,8 @@
 
 Dialog::Dialog(QWidget *parent) :
     QDialog(parent),
-    ui(new Ui::Dialog)
+    ui(new Ui::Dialog),
+    console(this)
 {
     ui->setupUi(this);
 #ifdef Q_OS_WIN32
@@ -15,6 +16,7 @@ Dialog::Dialog(QWidget *parent) :
     ui->lineEditPsExec->setEnabled(true);
     ui->toolButtonPsExec->setEnabled(true);
     ui->toolButtonAgentWin->setEnabled(true);
+    ui->toolButtonInstWin->setEnabled(true);
 #else
     ui->labelWinexe->setEnabled(true);
     ui->lineEditWinexe->setEnabled(true);
@@ -47,6 +49,7 @@ bool Dialog::loadConfig(Config * config) {
     ui->lineEditAgentUnix->setText(config->get("agent-unix"));
     ui->lineEditPsExec->setText(config->get("psexec"));
     ui->lineEditWinexe->setText(config->get("winexe"));
+    ui->lineEditInstWin->setText(config->get("inst-win"));
 
     if (config->isReadOnly() ) {
         ui->lineEditRemoteHost->setDisabled(true);
@@ -66,6 +69,8 @@ bool Dialog::loadConfig(Config * config) {
         ui->toolButtonPsExec->setDisabled(true);
         ui->lineEditWinexe->setDisabled(true);
         ui->toolButtonWinexe->setDisabled(true);
+        ui->lineEditWinexe->setDisabled(true);
+        ui->toolButtonInstWin->setDisabled(true);
 
         ui->pushButtonCancel->setEnabled(true);
         ui->pushButtonTest->setDisabled(true);
@@ -95,6 +100,7 @@ bool Dialog::setConfig() {
     config->set("agent-unix", ui->lineEditAgentUnix->text());
     config->set("psexec", ui->lineEditPsExec->text());
     config->set("winexe", ui->lineEditWinexe->text());
+    config->set("inst-win", ui->lineEditInstWin->text());
     config->save();
     return true;
 }
@@ -122,7 +128,6 @@ void Dialog::on_toolButtonSelectCert_clicked()
 
 void Dialog::on_pushButtonTest_clicked()
 {
-
     this->setConfig();
     if(ui->radioButtonLocal->isChecked()) {
         console.startLocal(config);
@@ -269,5 +274,47 @@ void Dialog::on_toolButtonWinexe_clicked()
         } else {
             ui->lineEditWinexe->setText(winexePath);
         }
+    }
+}
+
+void Dialog::on_toolButtonInstWin_clicked()
+{
+    QString instWinPath = QFileDialog::getOpenFileName(0,
+                                                      tr("Windows installation file path"),
+                                                      QDir::homePath());
+    if (!instWinPath.isEmpty() ) {
+        QFileInfo instWinPathInfo(instWinPath);
+        if (!instWinPathInfo.isFile() || !instWinPathInfo.isExecutable()) {
+            QMessageBox msgBox;
+            msgBox.setIcon(QMessageBox::Critical);
+            msgBox.setText(tr("Either not a file or not executable!"));
+            msgBox.exec();
+        } else {
+            ui->lineEditInstWin->setText(instWinPath);
+        }
+    }
+
+}
+
+void Dialog::on_pushButtonRemoteInst_clicked()
+{
+    this->setConfig();
+    if(ui->radioButtonLocal->isChecked()) {
+        QMessageBox msgBox;
+        msgBox.setText(tr("Local agent installation is not implemented yet!"));
+        msgBox.setIcon(QMessageBox::Warning);
+        msgBox.exec();
+    } else if (ui->radioButtonRemoteWin->isChecked()) {
+        console.instRemoteWin(config);
+    } else if(ui->radioButtonRemoteUnix->isChecked()) {
+        QMessageBox msgBox;
+        msgBox.setText(tr("Remote Unix agent installation is not implemented yet!"));
+        msgBox.setIcon(QMessageBox::Information);
+        msgBox.exec();
+    } else {
+        QMessageBox msgBox;
+        msgBox.setText(tr("No server selected."));
+        msgBox.setIcon(QMessageBox::Warning);
+        msgBox.exec();
     }
 }
