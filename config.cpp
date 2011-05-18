@@ -113,6 +113,7 @@ Config::Config(const QString & initCfgPath)
 {
 #ifdef Q_OS_WIN32
     settings = new QSettings( "HKEY_LOCAL_MACHINE\\Software\\FusionInventory-Agent", QSettings::NativeFormat );
+    readWrite = true;
 #else
 
     /* Config file path: fusInvCfgPath
@@ -146,7 +147,10 @@ Config::Config(const QString & initCfgPath)
         } else {
             cfgPath = QFileDialog::getOpenFileName(0, tr("Open Config File"),
                                                            QDir::homePath());
-            //FIXME cancel button should terminate the application
+            if(cfgPath.isNull()) {
+                settings = NULL;
+                return;
+            }
             if (!QFile::exists(cfgPath)) {
                 readWrite = QFile(cfgPath).open( QFile::WriteOnly );
                 QFile(cfgPath).close();

@@ -16,11 +16,6 @@ Console::~Console()
 }
 
 bool Console::startLocal(Config * config) {
-    //FIXME totally draft
-    //use the tag from config
-    //is this->config needed?
-    this->config = config;
-
     this->show();
     this->repaint();
 
@@ -47,11 +42,12 @@ bool Console::startLocal(Config * config) {
     connect ( myProcess, SIGNAL(readyReadStandardError ()), this,
              SLOT(updateConsole()));
 
-    ui->plainTextConsole->clear();
-    ui->plainTextConsole->appendPlainText(program);
+    ui->plainTextConsoleOut->clear();
+    ui->plainTextConsoleErr->clear();
+    ui->plainTextConsoleOut->appendPlainText(program);
 
     /*foreach(QString tmpStr, arguments) {
-        ui->plainTextConsole->appendPlainText(tmpStr);
+        ui->plainTextConsoleOut->appendPlainText(tmpStr);
     }
     */
 
@@ -60,19 +56,15 @@ bool Console::startLocal(Config * config) {
         qApp->processEvents(QEventLoop::AllEvents, 700);
     }
 
-    ui->plainTextConsole->appendPlainText("---------- Process Completed ----------");
-    ui->plainTextConsole->appendPlainText(QString("Exit code: %1").arg(myProcess->exitCode()));
+    ui->plainTextConsoleOut->appendPlainText("---------- Process Completed ----------");
+    ui->plainTextConsoleOut->appendPlainText(QString("Exit code: %1").arg(myProcess->exitCode()));
 
+    ui->pushButtonOK->setText("OK");
     return true;
 }
 
 
 bool Console::startRemoteWin(Config * config) {
-    //FIXME totally draft
-    //use the tag from config
-    //is this->config needed?
-    this->config = config;
-
     this->show();
     this->repaint();
 
@@ -93,11 +85,12 @@ bool Console::startRemoteWin(Config * config) {
     connect ( myProcess, SIGNAL(readyReadStandardError ()), this,
              SLOT(updateConsole()));
 
-    ui->plainTextConsole->clear();
-    ui->plainTextConsole->appendPlainText(program);
+    ui->plainTextConsoleOut->clear();
+    ui->plainTextConsoleErr->clear();
+    ui->plainTextConsoleOut->appendPlainText(program);
 
     /*foreach(QString tmpStr, arguments) {
-        ui->plainTextConsole->appendPlainText(tmpStr);
+        ui->plainTextConsoleOut->appendPlainText(tmpStr);
     }
     */
 
@@ -106,9 +99,10 @@ bool Console::startRemoteWin(Config * config) {
         qApp->processEvents(QEventLoop::AllEvents, 700);
     }
 
-    ui->plainTextConsole->appendPlainText("---------- Process Completed ----------");
-    ui->plainTextConsole->appendPlainText(QString("Exit code: %1").arg(myProcess->exitCode()));
+    ui->plainTextConsoleOut->appendPlainText("---------- Process Completed ----------");
+    ui->plainTextConsoleOut->appendPlainText(QString("Exit code: %1").arg(myProcess->exitCode()));
 
+    ui->pushButtonOK->setText("OK");
     return true;
 }
 
@@ -116,12 +110,10 @@ void Console::updateConsole () {
     QByteArray stdOutText = myProcess->readAllStandardOutput();
     QByteArray stdErrText = myProcess->readAllStandardError();
     if(stdOutText.size()>0) {
-        ui->plainTextConsole->appendPlainText("---------- StdOut ----------");
-        ui->plainTextConsole->appendPlainText(stdOutText.data());
+        ui->plainTextConsoleOut->appendPlainText(stdOutText.data());
     }
     if(stdErrText.size()>0) {
-        ui->plainTextConsole->appendPlainText("---------- StdErr ----------");
-        ui->plainTextConsole->appendPlainText(stdErrText.data());
+        ui->plainTextConsoleErr->appendPlainText(stdErrText.data());
     }
 }
 

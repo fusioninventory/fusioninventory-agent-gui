@@ -32,6 +32,14 @@ private slots:
 
     void on_radioButtonLocal_toggled(bool checked);
 
+    void on_toolButtonAgentWin_clicked();
+
+    void on_toolButtonAgentUnix_clicked();
+
+    void on_toolButtonPsExec_clicked();
+
+    void on_toolButtonWinexe_clicked();
+
 private:
     Ui::Dialog *ui;
 };

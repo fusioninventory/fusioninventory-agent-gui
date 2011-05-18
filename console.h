@@ -19,7 +19,6 @@ public:
     bool startLocal(Config * config);
     bool startRemoteWin(Config * config);
     QProcess *myProcess;
-    Config * config;
 
 private slots:
     void updateConsole ();

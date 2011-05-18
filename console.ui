@@ -2,6 +2,9 @@
 <ui version="4.0">
  <class>Console</class>
  <widget class="QDialog" name="Console">
+  <property name="windowModality">
+   <enum>Qt::ApplicationModal</enum>
+  </property>
   <property name="geometry">
    <rect>
     <x>0</x>
@@ -13,26 +16,58 @@
   <property name="windowTitle">
    <string>Console</string>
   </property>
+  <property name="windowIcon">
+   <iconset resource="FusionInventory.qrc">
+    <normaloff>:/fusinv/fusinv.ico</normaloff>:/fusinv/fusinv.ico</iconset>
+  </property>
   <layout class="QVBoxLayout" name="verticalLayout">
    <item>
-    <widget class="QPlainTextEdit" name="plainTextConsole">
+    <widget class="QLabel" name="label">
+     <property name="text">
+      <string>Standard Output</string>
+     </property>
+    </widget>
+   </item>
+   <item>
+    <widget class="QPlainTextEdit" name="plainTextConsoleOut">
      <property name="readOnly">
       <bool>true</bool>
      </property>
      <property name="plainText">
-      <string notr="true"/>
+      <string notr="true">Standard Output:
+</string>
+     </property>
+    </widget>
+   </item>
+   <item>
+    <widget class="QLabel" name="label_2">
+     <property name="text">
+      <string>Standard Error</string>
+     </property>
+    </widget>
+   </item>
+   <item>
+    <widget class="QPlainTextEdit" name="plainTextConsoleErr">
+     <property name="readOnly">
+      <bool>true</bool>
+     </property>
+     <property name="plainText">
+      <string notr="true">Standard Error:
+</string>
      </property>
     </widget>
    </item>
    <item>
     <widget class="QPushButton" name="pushButtonOK">
      <property name="text">
-      <string>OK</string>
+      <string>Close</string>
      </property>
     </widget>
    </item>
   </layout>
  </widget>
- <resources/>
+ <resources>
+  <include location="FusionInventory.qrc"/>
+ </resources>
  <connections/>
 </ui>

@@ -1,4 +1,5 @@
 #include <QFileDialog>
+#include <QFileInfo>
 #include <QMessageBox>
 #include "dialog.h"
 #include "ui_dialog.h"
@@ -13,12 +14,13 @@ Dialog::Dialog(QWidget *parent) :
     ui->labelPsExec->setEnabled(true);
     ui->lineEditPsExec->setEnabled(true);
     ui->toolButtonPsExec->setEnabled(true);
+    ui->toolButtonAgentWin->setEnabled(true);
 #else
     ui->labelWinexe->setEnabled(true);
     ui->lineEditWinexe->setEnabled(true);
     ui->toolButtonWinexe->setEnabled(true);
+    ui->toolButtonAgentUnix->setEnabled(true);
 #endif
-
 }
 
 Dialog::~Dialog()
@@ -148,4 +150,124 @@ void Dialog::on_radioButtonLocal_toggled(bool checked)
         ui->groupBoxRemoteHost->setEnabled(true);
     }
 
+}
+
+void Dialog::on_toolButtonAgentWin_clicked()
+{
+
+    QString agentPath = QFileDialog::getExistingDirectory(0,
+                                                             tr("Installation folder of the FusionInventory Agent"),
+                                                             QDir::homePath());
+    if (!agentPath.isEmpty() ) {
+        QFileInfo agentPathInfo(agentPath);
+        QMessageBox msgBox;
+        msgBox.setIcon(QMessageBox::Critical);
+        if (!agentPathInfo.exists()) {
+            msgBox.setText(tr("Folder does not exist!"));
+            msgBox.exec();
+            return;
+        }
+        if (!agentPathInfo.isDir()) {
+            msgBox.setText(tr("Not a folder!"));
+            msgBox.exec();
+            return;
+        }
+        agentPathInfo = QFileInfo(QString("%1\\perl\\bin\\perl.exe").arg(agentPath));
+        if (!agentPathInfo.exists()) {
+            msgBox.setText(tr("Folder does not contain perl\\bin\\perl.exe!"));
+            msgBox.exec();
+            return;
+        }
+        if (!agentPathInfo.isFile() || !agentPathInfo.isExecutable()) {
+            msgBox.setText(tr("\\perl\\bin\\perl.exe either is not a file or is not executable!"));
+            msgBox.exec();
+            return;
+        }
+        agentPathInfo = QFileInfo(QString("%1\\perl\\bin\\fusioninventory-agent").arg(agentPath));
+        if (!agentPathInfo.exists()) {
+            msgBox.setText(tr("Folder does not contain \\perl\\bin\\fusioninventory-agent!"));
+            msgBox.exec();
+            return;
+        }
+        if (!agentPathInfo.isFile() || !agentPathInfo.isReadable()) {
+            msgBox.setText(tr("\\perl\\bin\\fusioninventory-agent either is not a file or is not readable!"));
+            msgBox.exec();
+            return;
+        }
+
+        ui->lineEditAgentWin->setText(agentPath);
+    }
+}
+
+void Dialog::on_toolButtonAgentUnix_clicked()
+{
+    QString agentPath = QFileDialog::getExistingDirectory(0,
+                                                             tr("Installation folder of the FusionInventory Agent"),
+                                                             QDir::homePath());
+    if (!agentPath.isEmpty() ) {
+        QFileInfo agentWinPathInfo(agentPath);
+        QMessageBox msgBox;
+        msgBox.setIcon(QMessageBox::Critical);
+        if (!agentWinPathInfo.exists()) {
+            msgBox.setText(tr("Folder does not exist!"));
+            msgBox.exec();
+            return;
+        }
+        if (!agentWinPathInfo.isDir()) {
+            msgBox.setText(tr("Not a folder!"));
+            msgBox.exec();
+            return;
+        }
+        agentWinPathInfo = QFileInfo(QString("%1/fusioninventory-agent").arg(agentPath));
+        if (!agentWinPathInfo.exists()) {
+            msgBox.setText(tr("Folder does not contain fusioninventory-agent!"));
+            msgBox.exec();
+            return;
+        }
+        if (!agentWinPathInfo.isFile() || !agentWinPathInfo.isExecutable()) {
+            msgBox.setText(tr("fusioninventory-agent either is not a file or is not executable!"));
+            msgBox.exec();
+            return;
+        }
+
+        ui->lineEditAgentUnix->setText(agentPath);
+    }
+}
+
+void Dialog::on_toolButtonPsExec_clicked()
+{
+
+    QString psExecPath = QFileDialog::getOpenFileName(0,
+                                                      tr("PsExec executable file path"),
+                                                      QDir::homePath());
+    if (!psExecPath.isEmpty() ) {
+        QFileInfo psExecPathInfo(psExecPath);
+        if (!psExecPathInfo.isFile() || !psExecPathInfo.isExecutable()) {
+            QMessageBox msgBox;
+            msgBox.setIcon(QMessageBox::Critical);
+            msgBox.setText(tr("Either not a file or not executable!"));
+            msgBox.exec();
+        } else {
+            ui->lineEditPsExec->setText(psExecPath);
+        }
+    }
+
+}
+
+void Dialog::on_toolButtonWinexe_clicked()
+{
+    QString winexePath = QFileDialog::getOpenFileName(0,
+                                                      tr("Winexe executable file path"),
+                                                      QDir::homePath());
+    if (!winexePath.isEmpty() ) {
+        QFileInfo winexePathInfo(winexePath);
+        if (!winexePathInfo.isFile() || !winexePathInfo.isExecutable()) {
+            QMessageBox msgBox;
+            msgBox.setIcon(QMessageBox::Critical);
+            msgBox.setText(tr("Either not a file or not executable!"));
+            msgBox.exec();
+        } else {
+            ui->lineEditWinexe->setText(winexePath);
+        }
+    }
 }
