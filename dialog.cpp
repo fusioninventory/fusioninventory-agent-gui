@@ -7,8 +7,8 @@
 
 Dialog::Dialog(QWidget *parent) :
     QDialog(parent),
-    ui(new Ui::Dialog),
-    console(this)
+    console(this),
+    ui(new Ui::Dialog)
 {
     ui->setupUi(this);
 #ifdef Q_OS_WIN32
@@ -149,7 +149,7 @@ void Dialog::on_pushButtonTest_clicked()
 
 void Dialog::on_radioButtonLocal_toggled(bool checked)
 {
-    if(ui->radioButtonLocal->isChecked()) {
+    if(checked) {
         ui->groupBoxRemoteHost->setDisabled(true);
     } else {
         ui->groupBoxRemoteHost->setEnabled(true);

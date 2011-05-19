@@ -25,7 +25,7 @@ bool Console::startLocal(Config * config) {
 #ifdef Q_OS_WIN32
     program = QString("%1\\perl\\bin\\perl.exe")
             .arg(config->get("agent-win"));
-    arguments << QString( "\"%1\\perl\\bin\\fusioninventory-agent\")
+    arguments << QString( "\"%1\\perl\\bin\\fusioninventory-agent\"")
                          .arg(config->get("agent-win"));
 #else
     program = QString("%1/fusioninventory-agent")

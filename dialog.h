@@ -42,8 +42,6 @@ private slots:
 
     void on_toolButtonInstWin_clicked();
 
-    void on_pushButtonInstWin_clicked();
-
     void on_pushButtonRemoteInst_clicked();
 
 private:
