@@ -44,6 +44,8 @@ private slots:
 
     void on_pushButtonRemoteInst_clicked();
 
+    void on_toolButtonInstUnix_clicked();
+
 private:
     Ui::Dialog *ui;
 };

@@ -22,6 +22,7 @@ Dialog::Dialog(QWidget *parent) :
     ui->lineEditWinexe->setEnabled(true);
     ui->toolButtonWinexe->setEnabled(true);
     ui->toolButtonAgentUnix->setEnabled(true);
+    ui->toolButtonInstUnix->setEnabled(true);
 #endif
 }
 
@@ -50,6 +51,7 @@ bool Dialog::loadConfig(Config * config) {
     ui->lineEditPsExec->setText(config->get("psexec"));
     ui->lineEditWinexe->setText(config->get("winexe"));
     ui->lineEditInstWin->setText(config->get("inst-win"));
+    ui->lineEditInstUnix->setText(config->get("inst-unix"));
 
     if (config->isReadOnly() ) {
         ui->lineEditRemoteHost->setDisabled(true);
@@ -77,9 +79,9 @@ bool Dialog::loadConfig(Config * config) {
         ui->pushButton->setDisabled(true);
 
         QMessageBox msgBox;
-         msgBox.setText(tr("The configuration changes won't be saved. Do you have the required privilege?"));
-         msgBox.setIcon(QMessageBox::Warning);
-         msgBox.exec();
+        msgBox.setText(tr("The configuration changes won't be saved. Do you have the required privilege?"));
+        msgBox.setIcon(QMessageBox::Warning);
+        msgBox.exec();
     }
 
     return true;
@@ -101,6 +103,7 @@ bool Dialog::setConfig() {
     config->set("psexec", ui->lineEditPsExec->text());
     config->set("winexe", ui->lineEditWinexe->text());
     config->set("inst-win", ui->lineEditInstWin->text());
+    config->set("inst-unix", ui->lineEditInstUnix->text());
     config->save();
     return true;
 }
@@ -119,7 +122,7 @@ void Dialog::on_pushButtonCancel_clicked()
 void Dialog::on_toolButtonSelectCert_clicked()
 {
     QString fileName = QFileDialog::getOpenFileName(this, tr("Open File"),
-                                                     "/home");
+                                                    "/home");
 
     ui->labelCaCertFile->setText(fileName);
     config->set("ca-cert-file", fileName);
@@ -130,9 +133,45 @@ void Dialog::on_pushButtonTest_clicked()
 {
     this->setConfig();
     if(ui->radioButtonLocal->isChecked()) {
-        console.startLocal(config);
+        if(! console.startLocal(config)) {
+            if(QMessageBox::Yes == QMessageBox::question(this,
+                                                         tr("Agent execution failed"),
+                                                         tr("Agent execution failed. Would you like to try to install/reinstall the agent?"),
+                                                         QMessageBox::Yes, QMessageBox::Ignore)) {
+                if(console.instLocal(config)) {
+                    QMessageBox::information(this, tr("Installation completed"),
+                                             tr("Installation completed successfuly. Retrying agent execution..."),
+                                             QMessageBox::Ok);
+                    console.startLocal(config);
+                } else {
+                    QMessageBox::critical(this, tr("Installation failed"),
+                                          tr("Installation failed"),
+                                          QMessageBox::Ok);
+                }
+
+
+            }
+        }
     } else if (ui->radioButtonRemoteWin->isChecked()) {
-        console.startRemoteWin(config);
+        if(! console.startRemoteWin(config)) {
+            if(QMessageBox::Yes == QMessageBox::question(this,
+                                                         tr("Agent execution failed"),
+                                                         tr("Agent execution failed. Would you like to try to install/reinstall the agent?"),
+                                                         QMessageBox::Yes, QMessageBox::Ignore)) {
+                if(console.instRemoteWin(config)) {
+                    QMessageBox::information(this, tr("Installation completed"),
+                                             tr("Installation completed successfuly. Retrying agent execution..."),
+                                             QMessageBox::Ok);
+                    console.startRemoteWin(config);
+                } else {
+                    QMessageBox::critical(this, tr("Installation failed"),
+                                          tr("Installation failed"),
+                                          QMessageBox::Ok);
+                }
+
+
+            }
+        }
     } else if(ui->radioButtonRemoteUnix->isChecked()) {
         QMessageBox msgBox;
         msgBox.setText(tr("Remote Unix inventory is not implemented yet!"));
@@ -161,8 +200,8 @@ void Dialog::on_toolButtonAgentWin_clicked()
 {
 
     QString agentPath = QFileDialog::getExistingDirectory(0,
-                                                             tr("Installation folder of the FusionInventory Agent"),
-                                                             QDir::homePath());
+                                                          tr("Installation folder of the FusionInventory Agent"),
+                                                          QDir::homePath());
     if (!agentPath.isEmpty() ) {
         QFileInfo agentPathInfo(agentPath);
         QMessageBox msgBox;
@@ -207,8 +246,8 @@ void Dialog::on_toolButtonAgentWin_clicked()
 void Dialog::on_toolButtonAgentUnix_clicked()
 {
     QString agentPath = QFileDialog::getExistingDirectory(0,
-                                                             tr("Installation folder of the FusionInventory Agent"),
-                                                             QDir::homePath());
+                                                          tr("Installation folder of the FusionInventory Agent"),
+                                                          QDir::homePath());
     if (!agentPath.isEmpty() ) {
         QFileInfo agentWinPathInfo(agentPath);
         QMessageBox msgBox;
@@ -280,8 +319,8 @@ void Dialog::on_toolButtonWinexe_clicked()
 void Dialog::on_toolButtonInstWin_clicked()
 {
     QString instWinPath = QFileDialog::getOpenFileName(0,
-                                                      tr("Windows installation file path"),
-                                                      QDir::homePath());
+                                                       tr("Windows installation file path"),
+                                                       QDir::homePath());
     if (!instWinPath.isEmpty() ) {
         QFileInfo instWinPathInfo(instWinPath);
         if (!instWinPathInfo.isFile() || !instWinPathInfo.isExecutable()) {
@@ -318,3 +357,30 @@ void Dialog::on_pushButtonRemoteInst_clicked()
         msgBox.exec();
     }
 }
+
+void Dialog::on_toolButtonInstUnix_clicked()
+{
+
+    QString instUnixPath = QFileDialog::getExistingDirectory(0,
+                                                             tr("Unix installation files path"),
+                                                             QDir::homePath());
+    if (!instUnixPath.isEmpty() ) {
+        QFileInfo instUnixPathInfo(instUnixPath);
+        QMessageBox msgBox;
+        msgBox.setIcon(QMessageBox::Critical);
+        if (!instUnixPathInfo.exists()) {
+            msgBox.setText(tr("Folder does not exist!"));
+            msgBox.exec();
+            return;
+        }
+        if (!instUnixPathInfo.isDir()) {
+            msgBox.setText(tr("Not a folder!"));
+            msgBox.exec();
+            return;
+        }
+
+        ui->lineEditInstUnix->setText(instUnixPath);
+    }
+
+}
+

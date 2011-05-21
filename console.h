@@ -18,15 +18,18 @@ public:
     ~Console();
     bool startLocal(Config * config);
     bool startRemoteWin(Config * config);
+    bool instLocal(Config * config);
     bool instRemoteWin(Config * config);
     QProcess *myProcess;
 
 private slots:
     void updateConsole ();
+    void execError(QProcess::ProcessError error);
 
     void on_pushButtonOK_clicked();
 
 private:
+    bool successfulExec;
     Ui::Console *ui;
 };
 
