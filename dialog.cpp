@@ -216,25 +216,25 @@ void Dialog::on_toolButtonAgentWin_clicked()
             msgBox.exec();
             return;
         }
-        agentPathInfo = QFileInfo(QString("%1\\perl\\bin\\perl.exe").arg(agentPath));
+        agentPathInfo = QFileInfo(QString("%1/perl/bin/perl.exe").arg(agentPath));
         if (!agentPathInfo.exists()) {
-            msgBox.setText(tr("Folder does not contain perl\\bin\\perl.exe!"));
+            msgBox.setText(tr("Folder does not contain perl/bin/perl.exe!"));
             msgBox.exec();
             return;
         }
         if (!agentPathInfo.isFile() || !agentPathInfo.isExecutable()) {
-            msgBox.setText(tr("\\perl\\bin\\perl.exe either is not a file or is not executable!"));
+            msgBox.setText(tr("/perl/bin/perl.exe either is not a file or is not executable!"));
             msgBox.exec();
             return;
         }
-        agentPathInfo = QFileInfo(QString("%1\\perl\\bin\\fusioninventory-agent").arg(agentPath));
+        agentPathInfo = QFileInfo(QString("%1/perl/bin/fusioninventory-agent").arg(agentPath));
         if (!agentPathInfo.exists()) {
-            msgBox.setText(tr("Folder does not contain \\perl\\bin\\fusioninventory-agent!"));
+            msgBox.setText(tr("Folder does not contain /perl/bin/fusioninventory-agent!"));
             msgBox.exec();
             return;
         }
         if (!agentPathInfo.isFile() || !agentPathInfo.isReadable()) {
-            msgBox.setText(tr("\\perl\\bin\\fusioninventory-agent either is not a file or is not readable!"));
+            msgBox.setText(tr("/perl/bin/fusioninventory-agent either is not a file or is not readable!"));
             msgBox.exec();
             return;
         }

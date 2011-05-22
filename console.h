@@ -3,6 +3,7 @@
 
 #include <QDialog>
 #include <QProcess>
+#include <QFile>
 #include "config.h"
 
 namespace Ui {
@@ -31,6 +32,8 @@ private slots:
 private:
     bool successfulExec;
     Ui::Console *ui;
+
+    bool createInstScript(QFile * scriptFile, QString fileName, Config * config);
 };
 
 #endif // CONSOLE_H

@@ -1,6 +1,8 @@
 #include <iostream>
 #include <QFileDialog>
 #include <QMessageBox>
+#include <QTemporaryFile>
+#include <QTextStream>
 
 #include "stdlib.h"
 #include "console.h"
@@ -31,7 +33,7 @@ bool Console::startLocal(Config * config) {
     program = QString("%1\\perl\\bin\\perl.exe")
             .arg(config->get("agent-win"));
     arguments << QString( "\"%1\\perl\\bin\\fusioninventory-agent\"")
-                 .arg(config->get("agent-win"));
+                 .arg(QDir::toNativeSeparators(config->get("agent-win")));
 #else
     program = QString("%1/fusioninventory-agent")
             .arg(config->get("agent-unix"));
@@ -44,7 +46,9 @@ bool Console::startLocal(Config * config) {
                  .arg(config->get("server"));
 
     myProcess = new QProcess();
-    connect ( myProcess, SIGNAL(readyReadStandardError ()), this,
+    connect ( myProcess, SIGNAL(readyReadStandardError()), this,
+             SLOT(updateConsole()));
+    connect ( myProcess, SIGNAL(readyReadStandardOutput()), this,
              SLOT(updateConsole()));
     connect ( myProcess, SIGNAL(error(QProcess::ProcessError)), this,
              SLOT(execError(QProcess::ProcessError)));
@@ -94,10 +98,12 @@ bool Console::startRemoteWin(Config * config) {
                  .arg(config->get("server"));
 
     myProcess = new QProcess();
-    connect ( myProcess, SIGNAL(readyReadStandardError ()), this,
+    connect ( myProcess, SIGNAL(readyReadStandardError()), this,
+             SLOT(updateConsole()));
+    connect ( myProcess, SIGNAL(readyReadStandardOutput()), this,
              SLOT(updateConsole()));
     connect ( myProcess, SIGNAL(error(QProcess::ProcessError)), this,
-                 SLOT(execError(QProcess::ProcessError)));
+             SLOT(execError(QProcess::ProcessError)));
 
     ui->plainTextConsoleOut->clear();
     ui->plainTextConsoleErr->clear();
@@ -142,64 +148,66 @@ bool Console::instLocal(Config * config) {
     this->repaint();
 
 #ifdef Q_OS_WIN32
-    QString program = config->get("inst-win");
+    QString program = QDir::toNativeSeparators(config->get("inst-win"));
     QStringList arguments;
-    arguments << "/S" << Qstring("/tag=%2").arg(config->get("tag"))
+    arguments << "/S" << QString("/tag=%2").arg(config->get("tag"))
               <<  QString("/server=%3").arg(config->get("server"));
 #else
 
-    QString instUnixPath = QFileDialog::getOpenFileName(this,
+    QString instUnixFile = QFileDialog::getOpenFileName(this,
                                                         tr("Unix installation file"),
                                                         config->get("inst-unix"),
-                                                        "ZIP (*.zip);;Gzip compressed tar (*.tar.gz *.tgz);;Bzip2 compressed tar (*.tar.bz2);;tar (*.tar)");
-    if (instUnixPath.isEmpty()) {
+                                                        "ZIP(*.zip);;Gzip compressed tar(*.tar.gz *.tgz);;Bzip2 compressed tar(*.tar.bz2);;tar(*.tar)");
+    if (instUnixFile.isEmpty()) {
         return false;
     }
-    QFileInfo instUnixPathInfo(instUnixPath);
+    QFileInfo instUnixPathInfo(instUnixFile);
     if (!instUnixPathInfo.isFile() || !instUnixPathInfo.isReadable()) {
         QMessageBox::critical(this, tr("installation file error"),
                               tr("Installation file is not readable."),
                               QMessageBox::Ok);
         return false;
     }
-    //FIXME
-    if(instUnixPath.right(4).toLower() != ".zip") {
-        QMessageBox::information(this, tr("not implemented yet"),
-                                 tr("Installation using this type of file is not implemented yet"),
-                                 QMessageBox::Ok);
+
+
+    QTemporaryFile tempFile(QString("%1/%2-XXXXXX.sh")
+                            .arg(QDir::tempPath())
+                            .arg(QFileInfo(qApp->applicationFilePath()).fileName()));
+
+    if (! tempFile.open() || ! createInstScript(&tempFile, instUnixFile, config) ) {
+        QMessageBox::critical(this, tr("installation script error"),
+                              tr("Could not create a temporary installation script."),
+                              QMessageBox::Ok);
         return false;
     }
-    /* Checking the parent directory of the installation directory to be writable
+    /* Making sure that AutoRemove is set and closing the file descriptor
       */
-    QFileInfo instParentPath(QFileInfo(config->get("agent-unix").replace(QRegExp("/$"),"")).absolutePath());
+    tempFile.setAutoRemove(true);
+    tempFile.close();
 
-    if(instParentPath.exists()) {
-        if(!instParentPath.isWritable()) {
-            QMessageBox::critical(this, tr("installation path error"),
-                                  tr("Parent directory of the installation path is not writable."),
-                                  QMessageBox::Ok);
-            return false;
-        }
-    } else if (! QDir("/").mkpath(instParentPath.absoluteFilePath())) {
-        QMessageBox::critical(this, tr("installation path error"),
-                              tr("Could not create the parent directory of the installation path."),
+    if( ! tempFile.setPermissions(QFile::ReadOwner | QFile::WriteOwner | QFile::ExeOwner |
+                                  QFile::ReadUser  | QFile::WriteUser | QFile::ExeUser |
+                                  QFile::ReadGroup | QFile::ExeGroup |
+                                  QFile::ReadOther | QFile::ExeOther) ) {
+        QMessageBox::critical(this, tr("installation script error"),
+                              tr("Could not set executable permission on the temporary installation script."),
                               QMessageBox::Ok);
         return false;
     }
 
-    srand ( time(NULL) );
-    QDir tmpDir(QString("%1/%2.%3.%4")
-                .arg(instParentPath.absoluteFilePath())
-                .arg(QFileInfo(qApp->applicationFilePath()).fileName())
-                .arg(qApp->applicationPid())
-                .arg(rand() % 100));
-    QString program = "unzip";
+    QString program = "sh";
     QStringList arguments;
-    arguments << instUnixPath <<"-d" << tmpDir.absolutePath();
+    arguments << tempFile.fileName();
+    //TODO
+    /* Might be a good idea to run the shell by "errexit" option
+    arguments << "-o" << "errexit";
+    */
 #endif
 
     myProcess = new QProcess();
-    connect ( myProcess, SIGNAL(readyReadStandardError ()), this,
+    connect ( myProcess, SIGNAL(readyReadStandardError()), this,
+             SLOT(updateConsole()));
+    connect ( myProcess, SIGNAL(readyReadStandardOutput()), this,
              SLOT(updateConsole()));
     connect ( myProcess, SIGNAL(error(QProcess::ProcessError)), this,
              SLOT(execError(QProcess::ProcessError)));
@@ -222,15 +230,9 @@ bool Console::instLocal(Config * config) {
     int exitCode = myProcess->exitCode();
     ui->plainTextConsoleOut->appendPlainText(QString("Exit code: %1").arg(exitCode));
 
-#ifndef Q_OS_WIN32
-    if(successfulExec && ! exitCode) {
-        system(QString("rm -rf '%1'").arg(config->get("agent-unix")).toAscii());
-        tmpDir.rename(tmpDir.entryList().last(), config->get("agent-unix"));
-        tmpDir.rmdir(tmpDir.absolutePath());
-    }
-#endif
-
     ui->pushButtonOK->setText("OK");
+    /* Remove the installation script (program) before returning
+      */
     return successfulExec && ! exitCode;
 }
 
@@ -256,7 +258,9 @@ bool Console::instRemoteWin(Config * config) {
                  .arg(config->get("server"));
 
     myProcess = new QProcess();
-    connect ( myProcess, SIGNAL(readyReadStandardError ()), this,
+    connect ( myProcess, SIGNAL(readyReadStandardError()), this,
+             SLOT(updateConsole()));
+    connect ( myProcess, SIGNAL(readyReadStandardOutput()), this,
              SLOT(updateConsole()));
 
     ui->plainTextConsoleOut->clear();
@@ -304,4 +308,63 @@ void Console::on_pushButtonOK_clicked()
 {
     myProcess->kill();
     this->hide();
+}
+
+bool Console::createInstScript(QFile * scriptFile, QString fileName, Config * config) {
+    // Generating a decompression command for each file type
+    // ZIP(*.zip);;Gzip compressed tar(*.tar.gz *.tgz);;Bzip2 compressed tar(*.tar.bz2);;tar(*.tar)
+    QString decompressCmd;
+    if(fileName.right(4).toLower() == ".zip") {
+        decompressCmd = QString("unzip '%1' -d \"$TEMP_DIR\"").arg(fileName);
+    } else if(fileName.right(4).toLower() == ".tar") {
+        decompressCmd = QString("tar xvf '%1' -C \"$TEMP_DIR\"").arg(fileName);
+    } else if(fileName.right(4).toLower() == ".tgz" || fileName.right(7).toLower() == ".tar.gz") {
+        decompressCmd = QString("gzip -dc '%1' | tar xvf - -C \"$TEMP_DIR\"").arg(fileName);
+    } else if(fileName.right(8).toLower() == ".tar.bz2") {
+        decompressCmd = QString("bzip2 -dc '%1' | tar xvf - -C \"$TEMP_DIR\"").arg(fileName);
+    } else {
+        QMessageBox::information(this, tr("not implemented yet"),
+                                 tr("Installation using this type of file is not supported yet."),
+                                 QMessageBox::Ok);
+        return false;
+    }
+
+    //TODO
+    //List exit codes
+    QTextStream scriptTextStream(scriptFile);
+    scriptTextStream << "#!/bin/sh";
+    scriptTextStream << "\n";
+
+    QString instParentPath = QDir(QFileInfo(config->get("agent-unix").replace(QRegExp("/$"),"")).absolutePath()).absolutePath();
+    /* Checking the parent directory of the installation directory to be writable
+      */
+    scriptTextStream << "\n" << QString("if [ -d '%1' ]").arg(instParentPath);
+    scriptTextStream << "\n" <<         "then";
+    scriptTextStream << "\n" << QString("  if [ ! -w '%1' ]").arg(instParentPath);
+    scriptTextStream << "\n" <<         "  then";
+    scriptTextStream << "\n" << QString("    echo '%1'").arg(tr("Parent directory of the installation path is not writable."));
+    scriptTextStream << "\n" <<         "    exit 1";
+    scriptTextStream << "\n" <<         "  fi";
+    scriptTextStream << "\n" <<         "else";
+    scriptTextStream << "\n" << QString("  mkdir -p '%1'").arg(instParentPath);
+    scriptTextStream << "\n" << QString("  if [ ! -d '%1' -o !-w '%1' ]; then echo '%2'; exit 2; fi").arg(instParentPath).arg(tr("Could not create the parent directory of the installation path."));
+    scriptTextStream << "\n" <<         "fi";
+    scriptTextStream << "\n";
+
+    scriptTextStream << "\n" << QString("TEMP_DIR='%1/%2.%3.%4'")
+                        .arg(instParentPath)
+                        .arg(QFileInfo(qApp->applicationFilePath()).fileName())
+                        .arg(qApp->applicationPid())
+                        .arg(rand() % 100);
+    scriptTextStream << "\n" <<         "mkdir -p \"$TEMP_DIR\"";
+    scriptTextStream << "\n" << QString("if [ ! -d \"$TEMP_DIR\" -o ! -w \"$TEMP_DIR\" ]; then echo '%1'; exit 3; fi").arg(tr("Could not create the temp directory."));
+
+    scriptTextStream << "\n" << decompressCmd;
+
+    scriptTextStream << "\n" << QString("rm -rf '%1'").arg(config->get("agent-unix"));
+    scriptTextStream << "\n" << QString("mv  \"$TEMP_DIR\"/* '%2'").arg(config->get("agent-unix"));
+    scriptTextStream << "\n" <<         "rm -rf \"$TEMP_DIR\"";
+    scriptTextStream << "\n\n";
+
+    return true;
 }
