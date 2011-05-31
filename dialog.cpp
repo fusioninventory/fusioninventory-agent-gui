@@ -12,17 +12,9 @@ Dialog::Dialog(QWidget *parent) :
 {
     ui->setupUi(this);
 #ifdef Q_OS_WIN32
-    ui->labelPsExec->setEnabled(true);
-    ui->lineEditPsExec->setEnabled(true);
-    ui->toolButtonPsExec->setEnabled(true);
     ui->toolButtonAgentWin->setEnabled(true);
-    ui->toolButtonInstWin->setEnabled(true);
 #else
-    ui->labelWinexe->setEnabled(true);
-    ui->lineEditWinexe->setEnabled(true);
-    ui->toolButtonWinexe->setEnabled(true);
     ui->toolButtonAgentUnix->setEnabled(true);
-    ui->toolButtonInstUnix->setEnabled(true);
 #endif
 }
 
@@ -48,10 +40,6 @@ bool Dialog::loadConfig(Config * config) {
     ui->labelCaCertFile->setText(config->get("ca-cert-file"));
     ui->lineEditAgentWin->setText(config->get("agent-win"));
     ui->lineEditAgentUnix->setText(config->get("agent-unix"));
-    ui->lineEditPsExec->setText(config->get("psexec"));
-    ui->lineEditWinexe->setText(config->get("winexe"));
-    ui->lineEditInstWin->setText(config->get("inst-win"));
-    ui->lineEditInstUnix->setText(config->get("inst-unix"));
 
     if (config->isReadOnly() ) {
         ui->lineEditRemoteHost->setDisabled(true);
@@ -67,12 +55,6 @@ bool Dialog::loadConfig(Config * config) {
 
         ui->lineEditAgentWin->setDisabled(true);
         ui->lineEditAgentUnix->setDisabled(true);
-        ui->lineEditPsExec->setDisabled(true);
-        ui->toolButtonPsExec->setDisabled(true);
-        ui->lineEditWinexe->setDisabled(true);
-        ui->toolButtonWinexe->setDisabled(true);
-        ui->lineEditWinexe->setDisabled(true);
-        ui->toolButtonInstWin->setDisabled(true);
 
         ui->pushButtonCancel->setEnabled(true);
         ui->pushButtonTest->setDisabled(true);
@@ -100,10 +82,6 @@ bool Dialog::setConfig() {
     config->set("no-ssl-check", ui->checkBoxNoSSLCheck->isChecked()?"1":"0");
     config->set("agent-win", ui->lineEditAgentWin->text());
     config->set("agent-unix", ui->lineEditAgentUnix->text());
-    config->set("psexec", ui->lineEditPsExec->text());
-    config->set("winexe", ui->lineEditWinexe->text());
-    config->set("inst-win", ui->lineEditInstWin->text());
-    config->set("inst-unix", ui->lineEditInstUnix->text());
     config->save();
     return true;
 }
@@ -278,63 +256,6 @@ void Dialog::on_toolButtonAgentUnix_clicked()
     }
 }
 
-void Dialog::on_toolButtonPsExec_clicked()
-{
-
-    QString psExecPath = QFileDialog::getOpenFileName(0,
-                                                      tr("PsExec executable file path"),
-                                                      QDir::homePath());
-    if (!psExecPath.isEmpty() ) {
-        QFileInfo psExecPathInfo(psExecPath);
-        if (!psExecPathInfo.isFile() || !psExecPathInfo.isExecutable()) {
-            QMessageBox msgBox;
-            msgBox.setIcon(QMessageBox::Critical);
-            msgBox.setText(tr("Either not a file or not executable!"));
-            msgBox.exec();
-        } else {
-            ui->lineEditPsExec->setText(psExecPath);
-        }
-    }
-
-}
-
-void Dialog::on_toolButtonWinexe_clicked()
-{
-    QString winexePath = QFileDialog::getOpenFileName(0,
-                                                      tr("Winexe executable file path"),
-                                                      QDir::homePath());
-    if (!winexePath.isEmpty() ) {
-        QFileInfo winexePathInfo(winexePath);
-        if (!winexePathInfo.isFile() || !winexePathInfo.isExecutable()) {
-            QMessageBox msgBox;
-            msgBox.setIcon(QMessageBox::Critical);
-            msgBox.setText(tr("Either not a file or not executable!"));
-            msgBox.exec();
-        } else {
-            ui->lineEditWinexe->setText(winexePath);
-        }
-    }
-}
-
-void Dialog::on_toolButtonInstWin_clicked()
-{
-    QString instWinPath = QFileDialog::getOpenFileName(0,
-                                                       tr("Windows installation file path"),
-                                                       QDir::homePath());
-    if (!instWinPath.isEmpty() ) {
-        QFileInfo instWinPathInfo(instWinPath);
-        if (!instWinPathInfo.isFile() || !instWinPathInfo.isExecutable()) {
-            QMessageBox msgBox;
-            msgBox.setIcon(QMessageBox::Critical);
-            msgBox.setText(tr("Either not a file or not executable!"));
-            msgBox.exec();
-        } else {
-            ui->lineEditInstWin->setText(instWinPath);
-        }
-    }
-
-}
-
 void Dialog::on_pushButtonRemoteInst_clicked()
 {
     this->setConfig();
@@ -357,30 +278,3 @@ void Dialog::on_pushButtonRemoteInst_clicked()
         msgBox.exec();
     }
 }
-
-void Dialog::on_toolButtonInstUnix_clicked()
-{
-
-    QString instUnixPath = QFileDialog::getExistingDirectory(0,
-                                                             tr("Unix installation files path"),
-                                                             QDir::homePath());
-    if (!instUnixPath.isEmpty() ) {
-        QFileInfo instUnixPathInfo(instUnixPath);
-        QMessageBox msgBox;
-        msgBox.setIcon(QMessageBox::Critical);
-        if (!instUnixPathInfo.exists()) {
-            msgBox.setText(tr("Folder does not exist!"));
-            msgBox.exec();
-            return;
-        }
-        if (!instUnixPathInfo.isDir()) {
-            msgBox.setText(tr("Not a folder!"));
-            msgBox.exec();
-            return;
-        }
-
-        ui->lineEditInstUnix->setText(instUnixPath);
-    }
-
-}
-

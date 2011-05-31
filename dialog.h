@@ -36,15 +36,7 @@ private slots:
 
     void on_toolButtonAgentUnix_clicked();
 
-    void on_toolButtonPsExec_clicked();
-
-    void on_toolButtonWinexe_clicked();
-
-    void on_toolButtonInstWin_clicked();
-
     void on_pushButtonRemoteInst_clicked();
-
-    void on_toolButtonInstUnix_clicked();
 
 private:
     Ui::Dialog *ui;

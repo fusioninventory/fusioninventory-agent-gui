@@ -80,11 +80,22 @@ bool Console::startLocal(Config * config) {
 
 
 bool Console::startRemoteWin(Config * config) {
+    //TODO
+#ifdef Q_OS_WIN32
+    QMessageBox::critical(this, tr("Not implemented"),
+                          tr("Remote windows execution from a windows workstation is not implemented yet."),
+                          QMessageBox::Ok);
+    return false;
+#endif
     this->show();
     ui->pushButtonOK->setText("Close");
     this->repaint();
 
-    QString program = config->get("winexe");
+    QString tempWinexe = createWinexeFile();
+    if (tempWinexe .isEmpty()) {
+        return false;
+    }
+
     QStringList arguments;
     arguments << "--user"
               << QString("%1%%2")
@@ -96,33 +107,7 @@ bool Console::startRemoteWin(Config * config) {
                  .arg(config->get("agent-win"))
                  .arg(config->get("tag"))
                  .arg(config->get("server"));
-
-    myProcess = new QProcess();
-    connect ( myProcess, SIGNAL(readyReadStandardError()), this,
-             SLOT(updateConsole()));
-    connect ( myProcess, SIGNAL(readyReadStandardOutput()), this,
-             SLOT(updateConsole()));
-    connect ( myProcess, SIGNAL(error(QProcess::ProcessError)), this,
-             SLOT(execError(QProcess::ProcessError)));
-
-    ui->plainTextConsoleOut->clear();
-    ui->plainTextConsoleErr->clear();
-    ui->plainTextConsoleOut->appendPlainText(program);
-
-    /* foreach(QString tmpStr, arguments) {
-        ui->plainTextConsoleOut->appendPlainText(tmpStr);
-    }
-    */
-
-    myProcess->start(program, arguments);
-    while(myProcess->state() != QProcess::NotRunning) {
-        qApp->processEvents(QEventLoop::AllEvents, 700);
-    }
-
-    updateConsole();
-    ui->plainTextConsoleOut->appendPlainText("---------- Process Completed ----------");
-    int exitCode = myProcess->exitCode();
-    ui->plainTextConsoleOut->appendPlainText(QString("Exit code: %1").arg(exitCode));
+    bool processExecStatus = processExec(tempWinexe, arguments);
     /* Followong output means that the agent is not installed on the remote win host
        Error: error Creating process("C:\Program Files\FusionInventory-Agent\perl\bin\perl.exe" "C:\Program Files\FusionInventory-Agent\perl\bin\fusioninventory-agent" --debug  --tag=Testing-by_GUI --server http://ocs/ocsinventory) 3
       */
@@ -135,11 +120,12 @@ bool Console::startRemoteWin(Config * config) {
         ui->plainTextConsoleErr->appendPlainText(tr("Agent is not installed on the remote win host"));
         /* Just making sure that successfulExec is set to false
           */
-        successfulExec = false;
+        processExecStatus = false;
     }
 
+    QFile(tempWinexe).remove();
     ui->pushButtonOK->setText("OK");
-    return successfulExec && ! exitCode;
+    return processExecStatus;
 }
 
 bool Console::instLocal(Config * config) {
@@ -148,7 +134,12 @@ bool Console::instLocal(Config * config) {
     this->repaint();
 
 #ifdef Q_OS_WIN32
-    QString program = QDir::toNativeSeparators(config->get("inst-win"));
+    QString installationFile = createInstWinFile();
+    if (installationFile .isEmpty()) {
+        return false;
+    }
+
+    QString program = QDir::toNativeSeparators(installationFile);
     QStringList arguments;
     arguments << "/S" << QString("/tag=%2").arg(config->get("tag"))
               <<  QString("/server=%3").arg(config->get("server"));
@@ -231,17 +222,36 @@ bool Console::instLocal(Config * config) {
     ui->plainTextConsoleOut->appendPlainText(QString("Exit code: %1").arg(exitCode));
 
     ui->pushButtonOK->setText("OK");
-    /* Remove the installation script (program) before returning
+    /* Remove the installation script/program before returning
       */
+#ifdef Q_OS_WIN32
+    QFile::setPermissions(installationFile, QFile::ReadOwner | QFile::WriteOwner);
+    QFile::remove(installationFile);
+#else
+    /* AutoRemove is set, .remove is not necessary.
+      */
+    // tempFile.remove();
+#endif
     return successfulExec && ! exitCode;
 }
 
 bool Console::instRemoteWin(Config * config) {
+    //TODO
+#ifdef Q_OS_WIN32
+    QMessageBox::critical(this, tr("Not implemented"),
+                          tr("Remote windows execution from a windows workstation is not implemented yet."),
+                          QMessageBox::Ok);
+    return false;
+#endif
     this->show();
     ui->pushButtonOK->setText("Close");
     this->repaint();
 
-    QString program = config->get("winexe");
+    QString tempWinexe = createWinexeFile();
+    if (tempWinexe .isEmpty()) {
+        return false;
+    }
+
     QStringList arguments;
     arguments << "--user"
               << QString("%1%%2")
@@ -252,37 +262,56 @@ bool Console::instRemoteWin(Config * config) {
                  .arg(config->get("host-password"));
     arguments << "-d" << "11";
     arguments << QString("//%1").arg(config->get("host"));
-    arguments << QString("CMD.EXE /C \"%1\" /S /tag=%2 /server=%3")
-                 .arg(config->get("inst-win"))
-                 .arg(config->get("tag"))
-                 .arg(config->get("server"));
 
-    myProcess = new QProcess();
-    connect ( myProcess, SIGNAL(readyReadStandardError()), this,
-             SLOT(updateConsole()));
-    connect ( myProcess, SIGNAL(readyReadStandardOutput()), this,
-             SLOT(updateConsole()));
+    QStringList tmpArguments;
+    bool processExecStatus;
+    tmpArguments = QStringList(arguments);
+    tmpArguments << "CMD.EXE /C \"MKDIR %TEMP%\\FusInv\"";
+    processExecStatus = processExec(tempWinexe, tmpArguments);
+    /* This directory might already be there. Ignoring the return value */
 
-    ui->plainTextConsoleOut->clear();
-    ui->plainTextConsoleErr->clear();
-    ui->plainTextConsoleOut->appendPlainText(program);
+    tmpArguments = QStringList(arguments);
+    tmpArguments << "CMD.EXE /C \"NET SHARE FusInv=%TEMP%\\FusInv /UNLIMITED\"";
+    processExecStatus = processExec(tempWinexe, tmpArguments);
+    //TODO check the return value
 
-    /* foreach(QString tmpStr, arguments) {
-        ui->plainTextConsoleOut->appendPlainText(tmpStr);
+
+    QString installationFile = createInstWinFile();
+    if (installationFile .isEmpty()) {
+        return false;
     }
-    */
+    tmpArguments = QStringList();
+    tmpArguments << QString("//%1/FusInv").arg(config->get("host"));
+    tmpArguments << config->get("host-password");
+    tmpArguments << "-U" << config->get("host-user");
+    tmpArguments << "-c" << QString("lcd %1 ; put %2")
+                    .arg(QFileInfo(installationFile).absolutePath())
+                    .arg(QFileInfo(installationFile).fileName());
+    processExecStatus = processExec("smbclient", tmpArguments);
+    QFile(installationFile).remove();
+    //TODO check the return value
 
-    myProcess->start(program, arguments);
-    while(myProcess->state() != QProcess::NotRunning) {
-        qApp->processEvents(QEventLoop::AllEvents, 700);
-    }
+    tmpArguments = QStringList(arguments);
+    tmpArguments << "CMD.EXE /C \"NET SHARE FusInv /d\"";
+    processExecStatus = processExec(tempWinexe, tmpArguments);
 
-    updateConsole();
-    ui->plainTextConsoleOut->appendPlainText("---------- Process Completed ----------");
-    ui->plainTextConsoleOut->appendPlainText(QString("Exit code: %1").arg(myProcess->exitCode()));
+    tmpArguments = QStringList(arguments);
+    tmpArguments << QString("CMD.EXE /C \"%TEMP%\\FusInv\\%1\" /S /tag=%2 /server=%3")
+                    .arg(QFileInfo(installationFile).fileName())
+                    .arg(config->get("tag"))
+                    .arg(config->get("server"));
+    ui->plainTextConsoleOut->appendPlainText("---------- Installation in progress ----------");
+    ui->plainTextConsoleErr->appendPlainText("---------- Installation in progress ----------");
+    processExecStatus = processExec(tempWinexe, tmpArguments);
+    //TODO check the return value
 
+    tmpArguments = QStringList(arguments);
+    tmpArguments << "CMD.EXE /C \"RMDIR /S /Q %TEMP%\\FusInv\"";
+    processExecStatus = processExec(tempWinexe, tmpArguments);
+
+    QFile(tempWinexe).remove();
     ui->pushButtonOK->setText("OK");
-    return true;
+    return processExecStatus;
 }
 
 void Console::updateConsole () {
@@ -306,7 +335,9 @@ void Console::execError(QProcess::ProcessError error) {
 
 void Console::on_pushButtonOK_clicked()
 {
-    myProcess->kill();
+    if (myProcess->state() == QProcess::Running) {
+        myProcess->kill();
+    }
     this->hide();
 }
 
@@ -367,4 +398,78 @@ bool Console::createInstScript(QFile * scriptFile, QString fileName, Config * co
     scriptTextStream << "\n\n";
 
     return true;
+}
+
+QString Console::createWinexeFile() {
+    QString fileName = QString("%1/winexe.%2.%3")
+            .arg(QDir::tempPath())
+            .arg(qApp->applicationPid())
+            .arg(rand() % 100);
+
+    if ( QFile::copy(":/fusinv/winexe", fileName) &&
+            QFile(fileName).setPermissions(QFile::ReadOwner | QFile::WriteOwner | QFile::ExeOwner |
+                                           QFile::ReadUser  | QFile::WriteUser | QFile::ExeUser |
+                                           QFile::ReadGroup | QFile::ExeGroup |
+                                           QFile::ReadOther | QFile::ExeOther) ) {
+        return fileName;
+    } else {
+        QMessageBox::critical(this, tr("Embedded winexe file error"),
+                              tr("Could not copy the embedded winexe file into a regular file."),
+                              QMessageBox::Ok);
+        return "";
+    }
+}
+
+
+QString Console::createInstWinFile() {
+    QString fileName = QDir::toNativeSeparators(
+                QString("%1/FusInvAgentInst.%2.%3.exe")
+            .arg(QDir::tempPath())
+            .arg(qApp->applicationPid())
+            .arg(rand() % 100) );
+
+    if ( QFile::copy(":/fusinv/inst-win.exe", fileName) &&
+            QFile(fileName).setPermissions(QFile::ReadOwner | QFile::WriteOwner | QFile::ExeOwner |
+                                           QFile::ReadUser  | QFile::WriteUser | QFile::ExeUser |
+                                           QFile::ReadGroup | QFile::ExeGroup |
+                                           QFile::ReadOther | QFile::ExeOther) ) {
+        return fileName;
+    } else {
+        QMessageBox::critical(this, tr("Embedded Installation File error"),
+                              tr("Could not copy the embedded installation file into a regular file."),
+                              QMessageBox::Ok);
+        return "";
+    }
+}
+
+bool Console::processExec(QString program, QStringList arguments) {
+    myProcess = new QProcess();
+    connect ( myProcess, SIGNAL(readyReadStandardError()), this,
+             SLOT(updateConsole()));
+    connect ( myProcess, SIGNAL(readyReadStandardOutput()), this,
+             SLOT(updateConsole()));
+    connect ( myProcess, SIGNAL(error(QProcess::ProcessError)), this,
+             SLOT(execError(QProcess::ProcessError)));
+
+    ui->plainTextConsoleOut->clear();
+    ui->plainTextConsoleErr->clear();
+    ui->plainTextConsoleOut->appendPlainText(program);
+
+    /* foreach(QString tmpStr, arguments) {
+        ui->plainTextConsoleOut->appendPlainText(tmpStr);
+    }
+    */
+
+    successfulExec = true;
+    myProcess->start(program, arguments);
+    while(myProcess->state() != QProcess::NotRunning) {
+        qApp->processEvents(QEventLoop::AllEvents, 700);
+    }
+
+    updateConsole();
+    ui->plainTextConsoleOut->appendPlainText("---------- Process Completed ----------");
+    int exitCode = myProcess->exitCode();
+    ui->plainTextConsoleOut->appendPlainText(QString("Exit code: %1").arg(exitCode));
+
+    return successfulExec && ! exitCode;
 }

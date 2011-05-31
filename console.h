@@ -33,7 +33,10 @@ private:
     bool successfulExec;
     Ui::Console *ui;
 
+    bool processExec(QString program, QStringList arguments);
     bool createInstScript(QFile * scriptFile, QString fileName, Config * config);
+    QString createWinexeFile();
+    QString createInstWinFile();
 };
 
 #endif // CONSOLE_H
