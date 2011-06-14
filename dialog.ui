@@ -9,7 +9,7 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>581</width>
+    <width>671</width>
     <height>484</height>
    </rect>
   </property>
@@ -30,40 +30,55 @@
        </property>
        <widget class="QWidget" name="tab_2">
         <attribute name="title">
-         <string>Server</string>
+         <string>Host to be inventoried</string>
         </attribute>
         <layout class="QVBoxLayout" name="verticalLayout_7">
          <item>
-          <widget class="QRadioButton" name="radioButtonLocal">
-           <property name="enabled">
-            <bool>true</bool>
+          <widget class="QGroupBox" name="groupBox_2">
+           <property name="sizePolicy">
+            <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
+             <horstretch>0</horstretch>
+             <verstretch>0</verstretch>
+            </sizepolicy>
            </property>
-           <property name="text">
-            <string>Local Host</string>
+           <property name="title">
+            <string>Where to Install / Execute FusionInventory Agent</string>
            </property>
-           <property name="checked">
-            <bool>true</bool>
-           </property>
-          </widget>
-         </item>
-         <item>
-          <widget class="QRadioButton" name="radioButtonRemoteWin">
-           <property name="enabled">
-            <bool>true</bool>
-           </property>
-           <property name="text">
-            <string>Remote Windows Host</string>
-           </property>
-          </widget>
-         </item>
-         <item>
-          <widget class="QRadioButton" name="radioButtonRemoteUnix">
-           <property name="enabled">
-            <bool>false</bool>
-           </property>
-           <property name="text">
-            <string>Remote Unix / Linux Host</string>
-           </property>
+           <layout class="QVBoxLayout" name="verticalLayout_8">
+            <item>
+             <widget class="QRadioButton" name="radioButtonLocal">
+              <property name="enabled">
+               <bool>true</bool>
+              </property>
+              <property name="text">
+               <string>Local Host (this system)</string>
+              </property>
+              <property name="checked">
+               <bool>true</bool>
+              </property>
+             </widget>
+            </item>
+            <item>
+             <widget class="QRadioButton" name="radioButtonRemoteWin">
+              <property name="enabled">
+               <bool>true</bool>
+              </property>
+              <property name="text">
+               <string>Remote Windows Host (via RPC Service interface and the $Admin share)</string>
+              </property>
+             </widget>
+            </item>
+            <item>
+             <widget class="QRadioButton" name="radioButtonRemoteUnix">
+              <property name="enabled">
+               <bool>false</bool>
+              </property>
+              <property name="text">
+               <string>Remote Unix / Linux Host</string>
+              </property>
+             </widget>
+            </item>
+           </layout>
           </widget>
          </item>
          <item>
@@ -105,17 +120,17 @@ p, li { white-space: pre-wrap; }
             <bool>false</bool>
            </property>
            <property name="title">
-            <string>Remote host to be inventoried.</string>
+            <string>Remote host to be inventoried</string>
            </property>
            <layout class="QFormLayout" name="formLayout_2">
-            <item row="0" column="0">
+            <item row="1" column="0">
              <widget class="QLabel" name="label_11">
               <property name="text">
-               <string>Host</string>
+               <string>Host(s)</string>
               </property>
              </widget>
             </item>
-            <item row="0" column="1">
+            <item row="1" column="1">
              <widget class="QLineEdit" name="lineEditRemoteHost">
               <property name="toolTip">
                <string>The remote host to be inventoried.</string>
@@ -128,14 +143,14 @@ p, li { white-space: pre-wrap; }
               </property>
              </widget>
             </item>
-            <item row="1" column="0">
+            <item row="2" column="0">
              <widget class="QLabel" name="label_6">
               <property name="text">
                <string>Username</string>
               </property>
              </widget>
             </item>
-            <item row="1" column="1">
+            <item row="2" column="1">
              <widget class="QLineEdit" name="lineEditRemoteHostUser">
               <property name="toolTip">
                <string>Username of the remote host to be inventoried.</string>
@@ -149,20 +164,30 @@ p, li { white-space: pre-wrap; }
               </property>
              </widget>
             </item>
-            <item row="2" column="0">
+            <item row="3" column="0">
              <widget class="QLabel" name="label_10">
               <property name="text">
                <string>Password</string>
               </property>
              </widget>
             </item>
-            <item row="2" column="1">
+            <item row="3" column="1">
              <widget class="QLineEdit" name="lineEditRemoteHostPassword">
               <property name="toolTip">
                <string>Password of the remote host to be inventoried.</string>
               </property>
               <property name="text">
                <string>PlainTextPassword</string>
+              </property>
+              <property name="echoMode">
+               <enum>QLineEdit::PasswordEchoOnEdit</enum>
+              </property>
+             </widget>
+            </item>
+            <item row="0" column="1">
+             <widget class="QCheckBox" name="checkBoxTryNet">
+              <property name="text">
+               <string>Try the entire ...</string>
               </property>
              </widget>
             </item>
@@ -173,51 +198,55 @@ p, li { white-space: pre-wrap; }
        </widget>
        <widget class="QWidget" name="tab_5">
         <attribute name="title">
-         <string>Files and Filders</string>
+         <string>Agent installation folder</string>
         </attribute>
-        <layout class="QVBoxLayout" name="verticalLayout_6">
-         <item>
-          <widget class="QGroupBox" name="groupBox">
-           <property name="title">
-            <string>Agent installation folder</string>
+        <layout class="QFormLayout" name="formLayout">
+         <item row="0" column="0">
+          <widget class="QLabel" name="label_5">
+           <property name="text">
+            <string>Windows</string>
            </property>
-           <layout class="QFormLayout" name="formLayout">
-            <item row="0" column="0">
-             <widget class="QLabel" name="label_5">
-              <property name="text">
-               <string>Windows</string>
-              </property>
-             </widget>
-            </item>
-            <item row="0" column="1">
-             <widget class="QLineEdit" name="lineEditAgentWin">
-              <property name="toolTip">
-               <string>Where the FusionInventory-Agent is installed on the target host.</string>
-              </property>
-              <property name="whatsThis">
-               <string>Where the FusionInventory-Agent is installed. Normally C:\Program Files\FusionInventory-Agent\
+          </widget>
+         </item>
+         <item row="0" column="1">
+          <widget class="QLineEdit" name="lineEditAgentWin">
+           <property name="toolTip">
+            <string>Where the FusionInventory-Agent is installed on the target host.</string>
+           </property>
+           <property name="whatsThis">
+            <string>Where the FusionInventory-Agent is installed. Normally C:\Program Files\FusionInventory-Agent\
 
 perl\bin\perl.exe and perl\bin\fusioninventory-agent have to be present in this folder.</string>
-              </property>
-              <property name="text">
-               <string>C:\Program Files\FusionInventory-Agent\</string>
-              </property>
-             </widget>
-            </item>
-            <item row="2" column="0">
-             <widget class="QLabel" name="label_9">
-              <property name="text">
-               <string>Unix / Linux</string>
-              </property>
-             </widget>
-            </item>
-            <item row="2" column="1">
-             <widget class="QLineEdit" name="lineEditAgentUnix">
-              <property name="toolTip">
-               <string>Where the FusionInventory-Agent is installed on the target host.</string>
-              </property>
-              <property name="whatsThis">
-               <string>Where the FusionInventory-Agent is installed. Normally, one of the following:
+           </property>
+           <property name="text">
+            <string>C:\Program Files\FusionInventory-Agent\</string>
+           </property>
+          </widget>
+         </item>
+         <item row="1" column="1">
+          <widget class="QToolButton" name="toolButtonAgentWin">
+           <property name="enabled">
+            <bool>false</bool>
+           </property>
+           <property name="text">
+            <string>...</string>
+           </property>
+          </widget>
+         </item>
+         <item row="2" column="0">
+          <widget class="QLabel" name="label_9">
+           <property name="text">
+            <string>Unix / Linux</string>
+           </property>
+          </widget>
+         </item>
+         <item row="2" column="1">
+          <widget class="QLineEdit" name="lineEditAgentUnix">
+           <property name="toolTip">
+            <string>Where the FusionInventory-Agent is installed on the target host.</string>
+           </property>
+           <property name="whatsThis">
+            <string>Where the FusionInventory-Agent is installed. Normally, one of the following:
 /usr
 /usr/local
 /usr/fusioninventory-agent
@@ -226,33 +255,20 @@ perl\bin\perl.exe and perl\bin\fusioninventory-agent have to be present in this 
 
 
 fusioninventory-agent have to be present in this folder. Moreover, if it is a standalone installation, perl/bin/perl have to be present in this folder.</string>
-              </property>
-              <property name="text">
-               <string>/opt/fusioninventory-agent</string>
-              </property>
-             </widget>
-            </item>
-            <item row="3" column="1">
-             <widget class="QToolButton" name="toolButtonAgentUnix">
-              <property name="enabled">
-               <bool>false</bool>
-              </property>
-              <property name="text">
-               <string>...</string>
-              </property>
-             </widget>
-            </item>
-            <item row="1" column="1">
-             <widget class="QToolButton" name="toolButtonAgentWin">
-              <property name="enabled">
-               <bool>false</bool>
-              </property>
-              <property name="text">
-               <string>...</string>
-              </property>
-             </widget>
-            </item>
-           </layout>
+           </property>
+           <property name="text">
+            <string>/opt/fusioninventory-agent</string>
+           </property>
+          </widget>
+         </item>
+         <item row="3" column="1">
+          <widget class="QToolButton" name="toolButtonAgentUnix">
+           <property name="enabled">
+            <bool>false</bool>
+           </property>
+           <property name="text">
+            <string>...</string>
+           </property>
           </widget>
          </item>
         </layout>
@@ -441,16 +457,19 @@ fusioninventory-agent have to be present in this folder. Moreover, if it is a st
    <item>
     <layout class="QHBoxLayout" name="horizontalLayout">
      <item>
-      <widget class="QPushButton" name="pushButtonCancel">
+      <widget class="QPushButton" name="pushButtonTest">
        <property name="text">
-        <string>Cancel</string>
+        <string>Perform Inventory</string>
+       </property>
+       <property name="default">
+        <bool>true</bool>
        </property>
       </widget>
      </item>
      <item>
-      <widget class="QPushButton" name="pushButtonTest">
+      <widget class="QPushButton" name="pushButtonCancel">
        <property name="text">
-        <string>Perform Inventory</string>
+        <string>Cancel</string>
        </property>
       </widget>
      </item>
@@ -466,6 +485,25 @@ fusioninventory-agent have to be present in this folder. Moreover, if it is a st
   </layout>
  </widget>
  <layoutdefault spacing="6" margin="11"/>
+ <tabstops>
+  <tabstop>pushButtonTest</tabstop>
+  <tabstop>pushButtonCancel</tabstop>
+  <tabstop>pushButton</tabstop>
+  <tabstop>tabWidget</tabstop>
+  <tabstop>radioButtonLocal</tabstop>
+  <tabstop>radioButtonRemoteWin</tabstop>
+  <tabstop>radioButtonRemoteUnix</tabstop>
+  <tabstop>lineEditTag</tabstop>
+  <tabstop>lineEditRemoteHost</tabstop>
+  <tabstop>lineEditRemoteHostUser</tabstop>
+  <tabstop>lineEditRemoteHostPassword</tabstop>
+  <tabstop>lineEditServer</tabstop>
+  <tabstop>lineEditServerUser</tabstop>
+  <tabstop>lineEditServerPassword</tabstop>
+  <tabstop>lineEditProxy</tabstop>
+  <tabstop>checkBoxNoSSLCheck</tabstop>
+  <tabstop>toolButtonSelectCert</tabstop>
+ </tabstops>
  <resources>
   <include location="FusionInventory.qrc"/>
  </resources>

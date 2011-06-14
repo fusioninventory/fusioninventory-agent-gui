@@ -1,6 +1,9 @@
 #include <QFileDialog>
 #include <QFileInfo>
 #include <QMessageBox>
+#include <QNetworkInterface>
+#include <QAbstractSocket>
+#include <QNetworkAddressEntry>
 #include "dialog.h"
 #include "ui_dialog.h"
 #include "config.h"
@@ -13,8 +16,10 @@ Dialog::Dialog(QWidget *parent) :
     ui->setupUi(this);
 #ifdef Q_OS_WIN32
     ui->toolButtonAgentWin->setEnabled(true);
+    ui->checkBoxTryNet->setText(tr("Try the entire domain"));
 #else
     ui->toolButtonAgentUnix->setEnabled(true);
+    ui->checkBoxTryNet->setText(tr("Try the entire network subnet"));
 #endif
 }
 
@@ -83,6 +88,9 @@ bool Dialog::setConfig() {
     config->set("agent-win", ui->lineEditAgentWin->text());
     config->set("agent-unix", ui->lineEditAgentUnix->text());
     config->save();
+
+    console.setConfig(config);
+
     return true;
 }
 
@@ -111,45 +119,71 @@ void Dialog::on_pushButtonTest_clicked()
 {
     this->setConfig();
     if(ui->radioButtonLocal->isChecked()) {
-        if(! console.startLocal(config)) {
+        if(! console.startLocal()) {
             if(QMessageBox::Yes == QMessageBox::question(this,
                                                          tr("Agent execution failed"),
                                                          tr("Agent execution failed. Would you like to try to install/reinstall the agent?"),
                                                          QMessageBox::Yes, QMessageBox::Ignore)) {
-                if(console.instLocal(config)) {
+                if(console.instLocal()) {
                     QMessageBox::information(this, tr("Installation completed"),
                                              tr("Installation completed successfuly. Retrying agent execution..."),
                                              QMessageBox::Ok);
-                    console.startLocal(config);
+                    console.startLocal();
                 } else {
                     QMessageBox::critical(this, tr("Installation failed"),
                                           tr("Installation failed"),
                                           QMessageBox::Ok);
                 }
-
-
             }
         }
     } else if (ui->radioButtonRemoteWin->isChecked()) {
-        if(! console.startRemoteWin(config)) {
-            if(QMessageBox::Yes == QMessageBox::question(this,
-                                                         tr("Agent execution failed"),
-                                                         tr("Agent execution failed. Would you like to try to install/reinstall the agent?"),
-                                                         QMessageBox::Yes, QMessageBox::Ignore)) {
-                if(console.instRemoteWin(config)) {
-                    QMessageBox::information(this, tr("Installation completed"),
-                                             tr("Installation completed successfuly. Retrying agent execution..."),
-                                             QMessageBox::Ok);
-                    console.startRemoteWin(config);
-                } else {
-                    QMessageBox::critical(this, tr("Installation failed"),
-                                          tr("Installation failed"),
-                                          QMessageBox::Ok);
+        if(ui->checkBoxTryNet->isChecked()) {
+            QNetworkInterface tempInterface;
+            QNetworkAddressEntry tempAddress;
+            foreach (tempInterface, QNetworkInterface::allInterfaces()) {
+                foreach (tempAddress, tempInterface.addressEntries()) {
+                    if ( tempAddress.ip().protocol() == QAbstractSocket::IPv4Protocol &&
+                            tempAddress.ip() != QHostAddress::LocalHost &&
+                            tempAddress.ip() != QHostAddress::LocalHostIPv6) {
+                        quint32 networkIPv4Address = tempAddress.ip().toIPv4Address() & tempAddress.netmask().toIPv4Address();
+                        console.performRemoteWindowsInventoryOnIPv4Range(networkIPv4Address+1, tempAddress.broadcast().toIPv4Address()-1);
+                    }
                 }
-
-
+            }
+        } else {
+            QString remoteHosts = ui->lineEditRemoteHost->text();
+            remoteHosts.remove(QRegExp("\\s+"));
+            foreach (QString IPv4RangeString, remoteHosts.split(',')) {
+                QRegExp rx;
+                if (IPv4RangeString.isEmpty()) {
+                    continue;
+                }
+                rx.setPattern("^([1-9][0-9]*\\.[0-9]+\\.[0-9]+\\.[0-9]+)([-/])(?:([1-9][0-9]*\\.[0-9]+\\.[0-9]+\\.[0-9]+)|([0-9]+))$");
+                if (IPv4RangeString.contains(rx)) {
+                    quint32 startIP;
+                    quint32 endIP;
+                    if(rx.cap(2) == "-") {
+                        quint32 IP1 = QHostAddress(rx.cap(1)).toIPv4Address();
+                        quint32 IP2 = QHostAddress(rx.cap(3)).toIPv4Address();
+                        if (IP1<=IP2) {
+                            startIP = IP1;
+                            endIP = IP2;
+                        } else {
+                            startIP = IP2;
+                            endIP = IP1;
+                        }
+                    } else {
+                        QPair<QHostAddress, int> networkIPv4Address = QHostAddress::parseSubnet(IPv4RangeString);
+                        startIP = ((QHostAddress) networkIPv4Address.first).toIPv4Address();
+                        endIP = startIP | ( ~((quint32) 0) >> (  (int) networkIPv4Address.second) );
+                    }
+                    console.performRemoteWindowsInventoryOnIPv4Range(startIP, endIP);
+                } else {
+                    console.performRemoteWindowsInventory(IPv4RangeString);
+                }
             }
         }
+
     } else if(ui->radioButtonRemoteUnix->isChecked()) {
         QMessageBox msgBox;
         msgBox.setText(tr("Remote Unix inventory is not implemented yet!"));
@@ -256,25 +290,11 @@ void Dialog::on_toolButtonAgentUnix_clicked()
     }
 }
 
-void Dialog::on_pushButtonRemoteInst_clicked()
+void Dialog::on_checkBoxTryNet_toggled(bool checked)
 {
-    this->setConfig();
-    if(ui->radioButtonLocal->isChecked()) {
-        QMessageBox msgBox;
-        msgBox.setText(tr("Local agent installation is not implemented yet!"));
-        msgBox.setIcon(QMessageBox::Warning);
-        msgBox.exec();
-    } else if (ui->radioButtonRemoteWin->isChecked()) {
-        console.instRemoteWin(config);
-    } else if(ui->radioButtonRemoteUnix->isChecked()) {
-        QMessageBox msgBox;
-        msgBox.setText(tr("Remote Unix agent installation is not implemented yet!"));
-        msgBox.setIcon(QMessageBox::Information);
-        msgBox.exec();
+    if(checked) {
+        ui->lineEditRemoteHost->setDisabled(true);
     } else {
-        QMessageBox msgBox;
-        msgBox.setText(tr("No server selected."));
-        msgBox.setIcon(QMessageBox::Warning);
-        msgBox.exec();
+        ui->lineEditRemoteHost->setEnabled(true);
     }
 }

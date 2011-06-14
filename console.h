@@ -15,12 +15,20 @@ class Console : public QDialog
     Q_OBJECT
 
 public:
+    enum remoteExecError {NoError, NotInstalled, LogonFailure, HostUnreachable, IOTimeout, Killed ,UnknownError};
+
     explicit Console(QWidget *parent = 0);
     ~Console();
-    bool startLocal(Config * config);
-    bool startRemoteWin(Config * config);
-    bool instLocal(Config * config);
-    bool instRemoteWin(Config * config);
+    void setConfig(Config *config);
+    bool startLocal();
+    remoteExecError startRemoteWin(QString curHost);
+    bool instLocal();
+    remoteExecError instRemoteWin(QString curHost);
+
+    void performRemoteWindowsInventory(QString curHost);
+    void performRemoteWindowsInventoryOnIPv4Range(quint32 startIP, quint32 endIP);
+
+
     QProcess *myProcess;
 
 private slots:
@@ -30,11 +38,13 @@ private slots:
     void on_pushButtonOK_clicked();
 
 private:
-    bool successfulExec;
+    remoteExecError execStatus;
     Ui::Console *ui;
+    Config *config;
 
-    bool processExec(QString program, QStringList arguments);
-    bool createInstScript(QFile * scriptFile, QString fileName, Config * config);
+    void checkConsoleOut();
+    void processExec(QString program, QStringList arguments);
+    bool createInstScript(QFile * scriptFile, QString fileName);
     QString createWinexeFile();
     QString createInstWinFile();
 };

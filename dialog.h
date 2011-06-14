@@ -36,7 +36,7 @@ private slots:
 
     void on_toolButtonAgentUnix_clicked();
 
-    void on_pushButtonRemoteInst_clicked();
+    void on_checkBoxTryNet_toggled(bool checked);
 
 private:
     Ui::Dialog *ui;
