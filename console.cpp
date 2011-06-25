@@ -10,6 +10,10 @@
 #include "console.h"
 #include "ui_console.h"
 
+extern const char _fusinv[];
+extern const int _fusinv_size;
+
+
 Console::Console(QWidget *parent) :
     QDialog(parent),
     execStatus(Console::NoError),
@@ -113,7 +117,7 @@ Console::remoteExecError Console::startRemoteWin(QString curHost="") {
                  .arg(config->get("host-password"));
     arguments << "-d" << "11";
     arguments << QString("//%1").arg(targetHost);
-    arguments << QString("\"%1\\perl\\bin\\perl.exe\" \"%1\\perl\\bin\\fusioninventory-agent\" --debug  --tag=%2 --server %3")
+    arguments << QString("\"%1\\perl\\bin\\perl.exe\" \"%1\\perl\\bin\\fusioninventory-agent\" --debug  '--tag=%2' --server %3")
                  .arg(config->get("agent-win"))
                  .arg(config->get("tag"))
                  .arg(config->get("server"));
@@ -140,8 +144,13 @@ bool Console::instLocal() {
 
     QString program = QDir::toNativeSeparators(installationFile);
     QStringList arguments;
-    arguments << "/S" << QString("/tag=%2").arg(config->get("tag"))
-              <<  QString("/server=%3").arg(config->get("server"));
+    arguments << "/S" << QString("/tag=%1").arg(config->get("tag"))
+              <<  QString("/server=%1").arg(config->get("server"))
+              <<  QString("/user=%1").arg(config->get("server-user"))
+              <<  QString("/pass=%1").arg(config->get("server-pass"))
+              <<  QString("/proxy=%1").arg(config->get("proxy"))
+              <<  QString("/installdir=%1").arg(config->get("agent-win"))
+              <<  QString("/runnow");
 #else
 
     QString instUnixFile = QFileDialog::getOpenFileName(this,
@@ -297,10 +306,29 @@ Console::remoteExecError Console::instRemoteWin(QString curHost="") {
     processExec(tempWinexe, tempArguments);
 
     tempArguments = QStringList(arguments);
-    tempArguments << QString("CMD.EXE /C \"%TEMP%\\FusInv\\%1\" /S /tag=%2 /server=%3")
+
+    //QString tempCMD = QString("CMD.EXE /C \"%TEMP%\\FusInv\\%1\" /S '/tag=%2' '/server=%3' /runnow")
+    QString tempCMD = QString("CMD.EXE /S /C \"\"%TEMP%\\FusInv\\%1\" /S \"/tag=%2\" \"/server=%3\" /runnow")
                     .arg(QFileInfo(installationFile).fileName())
                     .arg(config->get("tag"))
                     .arg(config->get("server"));
+    if(!config->get("server-user").isEmpty()) {
+        tempCMD.append(QString(" \"/user=%1\"").arg(config->get("server-user")));
+    }
+    if(!config->get("server-pass").isEmpty()) {
+        tempCMD.append(QString(" \"/pass=%1\"").arg(config->get("server-pass")));
+    }
+    if(!config->get("proxy").isEmpty()) {
+        tempCMD.append(QString(" \"/proxy=%1\"").arg(config->get("proxy")));
+    }
+    if(!config->get("agent-win").isEmpty()) {
+        tempCMD.append(QString(" \"/installdir=%1\"").arg(config->get("agent-win")));
+    }
+    tempCMD.append("\"");
+    tempArguments << tempCMD;
+
+    QMessageBox::information(this, "Command", tempCMD);
+
     ui->plainTextConsoleOut->appendPlainText("---------- Installation in progress ----------");
     ui->plainTextConsoleErr->appendPlainText("---------- Installation in progress ----------");
     processExec(tempWinexe, tempArguments);
@@ -430,8 +458,13 @@ QString Console::createInstWinFile() {
             .arg(qApp->applicationPid())
             .arg(rand() % 100) );
 
-    if ( QFile::copy(":/fusinv/inst-win.exe", fileName) &&
-            QFile(fileName).setPermissions(QFile::ReadOwner | QFile::WriteOwner | QFile::ExeOwner |
+    QMessageBox::information(this,"FileName", fileName);
+
+    QFile instWinFile(fileName);
+    QDataStream tempStream(&instWinFile);
+    if ( instWinFile.open(QIODevice::WriteOnly) &&
+            tempStream.writeRawData(_fusinv, _fusinv_size) == _fusinv_size &&
+            instWinFile.setPermissions(QFile::ReadOwner | QFile::WriteOwner | QFile::ExeOwner |
                                            QFile::ReadUser  | QFile::WriteUser | QFile::ExeUser |
                                            QFile::ReadGroup | QFile::ExeGroup |
                                            QFile::ReadOther | QFile::ExeOther) ) {
@@ -492,7 +525,7 @@ void Console::checkConsoleOut() {
        Error: error Creating process("C:\Program Files\FusionInventory-Agent\perl\bin\perl.exe" "C:\Program Files\FusionInventory-Agent\perl\bin\fusioninventory-agent" --debug  --tag=Testing-by_GUI --server http://ocs/ocsinventory) 3
       */
     if(ui->plainTextConsoleOut->find(
-                QString("Error: error Creating process(%1) 3").arg(QString("\"%1\\perl\\bin\\perl.exe\" \"%1\\perl\\bin\\fusioninventory-agent\" --debug  --tag=%2 --server %3")
+                QString("Error: error Creating process(%1) 3").arg(QString("\"%1\\perl\\bin\\perl.exe\" \"%1\\perl\\bin\\fusioninventory-agent\" --debug  '--tag=%2' --server %3")
                                                                    .arg(config->get("agent-win"))
                                                                    .arg(config->get("tag"))
                                                                    .arg(config->get("server"))),

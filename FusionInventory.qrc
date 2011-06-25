@@ -2,7 +2,6 @@
     <qresource prefix="/fusinv">
         <file>fusinv.ico</file>
         <file alias="winexe">winexe-static-081123</file>
-        <file alias="inst-win.exe">fusioninventory-agent_windows-i386_2.1.8-2.exe</file>
         <file alias="psexec.exe">PsExec.exe</file>
     </qresource>
 </RCC>
