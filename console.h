@@ -42,11 +42,14 @@ private:
     Ui::Console *ui;
     Config *config;
 
-    void checkConsoleOut();
+    void checkConsoleOut(QString curtHost);
     void processExec(QString program, QStringList arguments);
     bool createInstScript(QFile * scriptFile, QString fileName);
+    QString createPsExecFile();
     QString createWinexeFile();
     QString createInstWinFile();
+    remoteExecError instRemoteWinFromWin(QString curHost);
+    remoteExecError instRemoteWinFromUnix(QString curHost);
 };
 
 #endif // CONSOLE_H

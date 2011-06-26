@@ -10,9 +10,13 @@
 #include "console.h"
 #include "ui_console.h"
 
+#ifdef Q_OS_WIN32
+extern const char fusinv[];
+extern const int fusinv_size;
+#else
 extern const char _fusinv[];
 extern const int _fusinv_size;
-
+#endif
 
 Console::Console(QWidget *parent) :
     QDialog(parent),
@@ -43,7 +47,7 @@ bool Console::startLocal() {
 #ifdef Q_OS_WIN32
     program = QString("%1\\perl\\bin\\perl.exe")
             .arg(config->get("agent-win"));
-    arguments << QString( "\"%1\\perl\\bin\\fusioninventory-agent\"")
+    arguments << QString( "%1\\perl\\bin\\fusioninventory-agent")
                  .arg(QDir::toNativeSeparators(config->get("agent-win")));
 #else
     program = QString("%1/fusioninventory-agent")
@@ -92,16 +96,39 @@ bool Console::startLocal() {
 
 
 Console::remoteExecError Console::startRemoteWin(QString curHost="") {
-    //TODO
-#ifdef Q_OS_WIN32
-    QMessageBox::critical(this, tr("Not implemented"),
-                          tr("Remote windows execution from a windows workstation is not implemented yet."),
-                          QMessageBox::Ok);
-    return UnknownError;
-#endif
     this->show();
     ui->pushButtonOK->setText("Close");
     this->repaint();
+
+#ifdef Q_OS_WIN32
+
+    QString tempPsExec = createPsExecFile();
+    if (tempPsExec.isEmpty()) {
+        return UnknownError;
+    }
+
+    QString targetHost = curHost.isEmpty()? config->get("host") : curHost;
+    this->setWindowTitle(tr("Remote Windows Agent Installation on ") + targetHost);
+    QStringList arguments;
+
+    arguments << QString("\\\\%1").arg(targetHost);
+    arguments << "-u"
+              << QString("%1").arg(config->get("host-user"))
+              << "-p"
+              << QString("%1").arg(config->get("host-password"));
+
+    arguments << QString("%1\\perl\\bin\\perl.exe").arg(config->get("agent-win"));
+    arguments << QString("%1\\perl\\bin\\fusioninventory-agent").arg(config->get("agent-win"));
+    arguments << "--debug";
+    arguments << QString("--tag=%1").arg(config->get("tag"));
+    arguments << QString("--server=%1").arg(config->get("server"));
+    processExec(tempPsExec, arguments);
+
+    checkConsoleOut(targetHost);
+
+    QFile(tempPsExec).remove();
+
+#else
 
     QString tempWinexe = createWinexeFile();
     if (tempWinexe .isEmpty()) {
@@ -126,6 +153,9 @@ Console::remoteExecError Console::startRemoteWin(QString curHost="") {
     checkConsoleOut();
 
     QFile(tempWinexe).remove();
+
+#endif
+
     ui->pushButtonOK->setText("OK");
     return execStatus;
 }
@@ -244,20 +274,71 @@ bool Console::instLocal() {
     return (execStatus == NoError) && ! exitCode;
 }
 
+
 Console::remoteExecError Console::instRemoteWin(QString curHost="") {
-    //TODO
-#ifdef Q_OS_WIN32
-    QMessageBox::critical(this, tr("Not implemented"),
-                          tr("Remote windows execution from a windows workstation is not implemented yet."),
-                          QMessageBox::Ok);
-    return UnknownError;
-#endif
     this->show();
     ui->pushButtonOK->setText("Close");
     this->repaint();
+#ifdef Q_OS_WIN32
+    return instRemoteWinFromWin(curHost);
+#else
+    return instRemoteWinFromUnix(curHost);
+#endif
+}
 
+Console::remoteExecError Console::instRemoteWinFromWin(QString curHost="") {
+    QString tempPsExec = createPsExecFile();
+    if (tempPsExec.isEmpty()) {
+        return UnknownError;
+    }
+
+    QString targetHost = curHost.isEmpty()? config->get("host") : curHost;
+    this->setWindowTitle(tr("Remote Windows Agent Installation on ") + targetHost);
+    QStringList arguments;
+    arguments << QString("\\\\%1").arg(targetHost);
+    arguments << "-u"
+              << QString("%1").arg(config->get("host-user"))
+              << "-p"
+              << QString("%1").arg(config->get("host-password"));
+    arguments << "-c" << "-f";
+
+    QString installationFile = createInstWinFile();
+    if (installationFile .isEmpty()) {
+        return UnknownError;
+    }
+
+    arguments << installationFile;
+    arguments << "/S";
+    arguments << QString("/tag=%1").arg(config->get("tag"));
+    arguments << QString("/server=%1").arg(config->get("server"));
+    arguments << "/runnow";
+
+    if(!config->get("server-user").isEmpty()) {
+        arguments << QString("/user=%1").arg(config->get("server-user"));
+    }
+    if(!config->get("server-pass").isEmpty()) {
+        arguments << QString("/pass=%1").arg(config->get("server-pass"));
+    }
+    if(!config->get("proxy").isEmpty()) {
+        arguments << QString("/proxy=%1").arg(config->get("proxy"));
+    }
+    if(!config->get("agent-win").isEmpty()) {
+        arguments << QString("/installdir=%1").arg(config->get("agent-win"));
+    }
+
+    ui->plainTextConsoleOut->appendPlainText("---------- Installation in progress ----------");
+    ui->plainTextConsoleErr->appendPlainText("---------- Installation in progress ----------");
+    processExec(tempPsExec, arguments);
+    //TODO check the return value
+
+    QFile(tempPsExec).remove();
+    ui->pushButtonOK->setText("OK");
+    return execStatus;
+}
+
+Console::remoteExecError Console::instRemoteWinFromUnix(QString curHost="") {
     QString tempWinexe = createWinexeFile();
-    if (tempWinexe .isEmpty()) {
+    if (tempWinexe.isEmpty()) {
         return UnknownError;
     }
 
@@ -326,8 +407,6 @@ Console::remoteExecError Console::instRemoteWin(QString curHost="") {
     }
     tempCMD.append("\"");
     tempArguments << tempCMD;
-
-    QMessageBox::information(this, "Command", tempCMD);
 
     ui->plainTextConsoleOut->appendPlainText("---------- Installation in progress ----------");
     ui->plainTextConsoleErr->appendPlainText("---------- Installation in progress ----------");
@@ -430,6 +509,26 @@ bool Console::createInstScript(QFile * scriptFile, QString fileName) {
     return true;
 }
 
+QString Console::createPsExecFile() {
+    QString fileName = QString("%1/psexec.%2.%3.exe")
+            .arg(QDir::tempPath())
+            .arg(qApp->applicationPid())
+            .arg(rand() % 100);
+
+    if ( QFile::copy(":/fusinv/psexec.exe", fileName) &&
+            QFile(fileName).setPermissions(QFile::ReadOwner | QFile::WriteOwner | QFile::ExeOwner |
+                                           QFile::ReadUser  | QFile::WriteUser | QFile::ExeUser |
+                                           QFile::ReadGroup | QFile::ExeGroup |
+                                           QFile::ReadOther | QFile::ExeOther) ) {
+        return fileName;
+    } else {
+        QMessageBox::critical(this, tr("Embedded PsExec.exe file error"),
+                              tr("Could not copy the embedded PsExec.exe file into a regular file."),
+                              QMessageBox::Ok);
+        return "";
+    }
+}
+
 QString Console::createWinexeFile() {
     QString fileName = QString("%1/winexe.%2.%3")
             .arg(QDir::tempPath())
@@ -463,11 +562,15 @@ QString Console::createInstWinFile() {
     QFile instWinFile(fileName);
     QDataStream tempStream(&instWinFile);
     if ( instWinFile.open(QIODevice::WriteOnly) &&
+#ifdef Q_OS_WIN32
+            tempStream.writeRawData(fusinv, fusinv_size) == fusinv_size &&
+#else
             tempStream.writeRawData(_fusinv, _fusinv_size) == _fusinv_size &&
+#endif
             instWinFile.setPermissions(QFile::ReadOwner | QFile::WriteOwner | QFile::ExeOwner |
-                                           QFile::ReadUser  | QFile::WriteUser | QFile::ExeUser |
-                                           QFile::ReadGroup | QFile::ExeGroup |
-                                           QFile::ReadOther | QFile::ExeOther) ) {
+                                       QFile::ReadUser  | QFile::WriteUser | QFile::ExeUser |
+                                       QFile::ReadGroup | QFile::ExeGroup |
+                                       QFile::ReadOther | QFile::ExeOther) ) {
         return fileName;
     } else {
         QMessageBox::critical(this, tr("Embedded Installation File error"),
@@ -520,16 +623,24 @@ void Console::performRemoteWindowsInventoryOnIPv4Range(quint32 startIP, quint32 
     }
 }
 
-void Console::checkConsoleOut() {
-    /* Followong output means that the agent is not installed on the remote win host
+void Console::checkConsoleOut(QString curHost="") {
+    /* Followong output means that the agent is not installed on the remote win host (for winexe)
        Error: error Creating process("C:\Program Files\FusionInventory-Agent\perl\bin\perl.exe" "C:\Program Files\FusionInventory-Agent\perl\bin\fusioninventory-agent" --debug  --tag=Testing-by_GUI --server http://ocs/ocsinventory) 3
+       Or (for PsExec.exe)
+       PsExec could not start D:\FusIn Agent\perl\bin\perl.exe on 10.10.2.12:
       */
     if(ui->plainTextConsoleOut->find(
                 QString("Error: error Creating process(%1) 3").arg(QString("\"%1\\perl\\bin\\perl.exe\" \"%1\\perl\\bin\\fusioninventory-agent\" --debug  '--tag=%2' --server %3")
                                                                    .arg(config->get("agent-win"))
                                                                    .arg(config->get("tag"))
                                                                    .arg(config->get("server"))),
-                QTextDocument::FindBackward)) {
+                QTextDocument::FindBackward) ||
+            ui->plainTextConsoleErr->find(
+                QString("PsExec could not start %1\\perl\\bin\\perl.exe on %2:")
+                .arg(config->get("agent-win"))
+                .arg(curHost),
+                QTextDocument::FindBackward)
+            ) {
         ui->plainTextConsoleErr->appendPlainText(tr("Agent is not installed on the remote win host"));
         execStatus = NotInstalled;
     } else if(ui->plainTextConsoleOut->find("ERROR: Failed to open connection - NT_STATUS_LOGON_FAILURE",
